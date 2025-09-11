@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Recommendations</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #000000; /* Black background */
+            color: #ffffff; /* White text for contrast */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem; /* Consistent padding */
+            box-sizing: border-box;
+        }
+        .header {
+            width: 100%;
+            max-width: 48rem; /* Max width for content */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+        }
+        .recommendations-grid {
+            width: 100%;
+            max-width: 48rem; /* Max width for content */
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 1.5rem;
+        }
+        .book-card {
+            background-color: #1a1a1a; /* Dark gray for card background */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex; /* Use flexbox for horizontal layout */
+            gap: 1rem; /* Space between cover and content */
+            padding: 1rem;
+            transition: transform 0.2s ease-in-out;
+            align-items: flex-start; /* Align items to the top */
+        }
+        .book-card:hover {
+            transform: translateY(-3px);
+        }
+        .book-cover-container {
+            flex-shrink: 0; /* Prevent cover from shrinking */
+            width: 100px; /* Fixed width for cover */
+            height: 150px; /* Standard book cover aspect ratio */
+            background-color: #333333; /* Darker gray for cover placeholder */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #ccc;
+            overflow: hidden;
+            border-radius: 0.25rem;
+        }
+        .book-cover-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the area, cropping if necessary */
+        }
+        .book-info-content {
+            flex-grow: 1; /* Allow content to take available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Push buttons to bottom if content is short */
+        }
+        .book-title {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: bold;
+            color: #60a5fa; /* blue-400 */
+            margin-bottom: 0.25rem;
+        }
+        .book-author-price, .book-metadata, .book-rating, .book-genres, .book-description, .book-source {
+            font-size: 0.875rem; /* text-sm */
+            color: #a0a0a0; /* gray-400 */
+            margin-top: 0.125rem;
+        }
+        .book-rating .fa-star {
+            color: #facc15; /* yellow-500 */
+        }
+        .book-description {
+            max-height: 4.5em; /* Limit description height (approx 3 lines) */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Number of lines to show */
+            -webkit-box-orient: vertical;
+            margin-top: 0.5rem;
+        }
+        .loading-message {
+            margin-top: 2rem;
+            font-size: 1.25rem;
+            color: #60a5fa;
+        }
+        .message-box {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #22c55e; /* Green for success */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .message-box.error {
+            background-color: #ef4444; /* Red for error */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="bookTracking.html" class="flex items-center text-lg text-blue-400 hover:text-blue-200 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to My Books
+        </a>
+        <span id="userIdDisplay" class="text-xs text-gray-500"></span>
+    </div>
+
+    <div class="w-full max-w-4xl text-center mt-8">
+        <h1 id="recommendation-header" class="text-3xl font-bold text-white mb-4">Book Recommendations</h1>
+        <p class="text-gray-400" id="recommendation-subheader">
+            Loading recommendations...
+        </p>
+
+        <!-- Hybrid Recommendation Controls -->
+        <div id="hybrid-controls" class="mb-6 p-4 bg-gray-800 rounded-lg hidden">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-4">
+                <div class="flex items-center gap-2">
+                    <label for="alpha-slider" class="text-sm text-gray-300">Collaborative Weight:</label>
+                    <input type="range" id="alpha-slider" min="0" max="1" step="0.1" value="0.5" class="w-24">
+                    <span id="alpha-value" class="text-sm text-blue-400 w-8">0.5</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="mode-toggle" class="text-sm text-gray-300">Mode:</label>
+                    <button id="mode-toggle" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors">
+                        Hybrid
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="score-toggle" class="text-sm text-gray-300">Show Scores:</label>
+                    <input type="checkbox" id="score-toggle" class="rounded">
+                </div>
+            </div>
+            <div id="tag-display" class="text-sm text-gray-400"></div>
+        </div>
+
+        <div id="recommendations-container" class="recommendations-grid">
+            <!-- Book recommendation cards will be injected here -->
+        </div>
+        <div id="loadingMessage" class="loading-message">
+            Fetching recommendations...
+        </div>
+        <div id="noResultsMessage" class="hidden text-lg text-gray-500 mt-8">
+            No recommendations found for this tag.
+        </div>
+    </div>
+
+    <div id="message-box" class="message-box"></div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration and initialization
+        // The Canvas environment provides all necessary configuration through global variables.
+        // Firebase Configuration (MUST MATCH YOUR PROJECT)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
+            authDomain: "bookhub-80381.firebaseapp.com",
+            projectId: "bookhub-80381",
+            storageBucket: "bookhub-80381.firebasestorage.app",
+            messagingSenderId: "525454852384",
+            appId: "1:525454852384:web:1910c936f8062125779745"
+        };
+
+        let app;
+        let db;
+        let auth;
+        let userId;
+        let isAuthReady = false;
+        const appId = firebaseConfig.projectId; // Using projectId as appId for consistency
+
+        const loadingMessage = document.getElementById('loadingMessage');
+        const recommendationsContainer = document.getElementById('recommendations-container');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const recommendationHeader = document.getElementById('recommendation-header');
+        const recommendationSubheader = document.getElementById('recommendation-subheader');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+
+        // Function to show a temporary message box
+        function showMessage(message, isError = false) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = message;
+            messageBox.classList.remove('error', 'success');
+            if (isError) {
+                messageBox.classList.add('error');
+            } else {
+                messageBox.classList.add('success');
+            }
+            messageBox.classList.add('show');
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        async function initializeFirebaseAndAuth() {
+            try {
+                if (!app) {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                }
+
+                // Wait for authentication
+                const user = await new Promise((resolve, reject) => {
+                    const unsubscribe = onAuthStateChanged(auth, (user) => {
+                        unsubscribe();
+                        if (user) {
+                            resolve(user);
+                        } else {
+                            // Try anonymous sign-in
+                            signInAnonymously(auth)
+                                .then(() => {
+                                    // Wait for the next auth state change
+                                    const unsubscribe2 = onAuthStateChanged(auth, (user) => {
+                                        unsubscribe2();
+                                        resolve(user);
+                                    });
+                                })
+                                .catch(reject);
+                        }
+                    });
+                });
+
+                if (user) {
+                    userId = user.uid;
+                    console.log("Authenticated with user ID:", userId);
+                    userIdDisplay.textContent = `User ID: ${userId}`;
+                } else {
+                    console.error("No user authenticated");
+                    showMessage("Authentication failed. Please try logging in again.", true);
+                    throw new Error("Authentication failed");
+                }
+
+                return user;
+            } catch (error) {
+                console.error("Error during Firebase initialization or authentication:", error);
+                showMessage(`Authentication failed: ${error.message}`, true);
+                throw error;
+            }
+        }
+
+        // Global variables for hybrid controls
+        let currentMode = 'hybrid'; // 'hybrid' or 'content'
+        let currentAlpha = 0.5;
+        let showScores = false;
+
+        // Function to render a single book card
+        function renderBookCard(book, scoreInfo = null) {
+            const bookCard = document.createElement('div'); // Changed from a to div
+            bookCard.className = "book-card cursor-pointer";
+            bookCard.onclick = () => { // Added onclick event
+                window.location.href = `/summary?bookId=${book.id}`;
+            };
+
+            let scoreHtml = '';
+            if (showScores && scoreInfo) {
+                scoreHtml = `
+                    <div class="mt-2 text-xs text-gray-500">
+                        <div>Content: ${(scoreInfo.content_score * 100).toFixed(0)}%</div>
+                        <div>Collaborative: ${(scoreInfo.collab_score * 100).toFixed(0)}%</div>
+                        <div>Hybrid: ${(scoreInfo.hybrid_score * 100).toFixed(0)}%</div>
+                    </div>
+                `;
+            }
+
+            bookCard.innerHTML = `
+            <div class="book-cover-container">
+                <img src="${book.coverUrl || 'https://placehold.co/100x150/333333/cccccc?text=No+Cover'}"
+                     onerror="this.onerror=null;this.src='https://placehold.co/100x150/333333/cccccc?text=No+Cover';"
+                     alt="Book Cover">
+            </div>
+                <div class="book-info-content">
+                    <div>
+                        <h3 class="book-title">${book.title || 'Untitled'}</h3>
+                        <p class="book-author-price">${book.author || 'Unknown Author'}</p>
+                        <p class="book-description mt-2">${book.description || 'No description available.'}</p>
+                        ${scoreHtml}
+                    </div>
+                </div>
+            `;
+            return bookCard;
+        }
+
+        // Function to fetch hybrid recommendations from backend API
+        async function fetchHybridRecommendations(tags, alpha = 0.5) {
+            try {
+                const response = await fetch(`/api/recommendations/hybrid?user_id=${userId}&tags=${tags.join(',')}&alpha=${alpha}&limit=10`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.recommendations || [];
+            } catch (error) {
+                console.error("Error fetching hybrid recommendations:", error);
+                throw error;
+            }
+        }
+
+        // Function to fetch content-based recommendations (fallback)
+        async function fetchContentRecommendations(tags) {
+            try {
+                const response = await fetch(`/api/recommendations/by-tags?user_id=${userId}&tags=${tags.join(',')}&limit=10`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.recommendations || [];
+            } catch (error) {
+                console.error("Error fetching content recommendations:", error);
+                throw error;
+            }
+        }
+
+        // Function to fetch and display books based on tags and mode
+        async function fetchRecommendations(tags, mode = 'hybrid', alpha = 0.5) {
+            recommendationsContainer.innerHTML = '';
+            loadingMessage.classList.remove('hidden');
+            noResultsMessage.classList.add('hidden');
+
+            try {
+                if (!tags || tags.length === 0) {
+                    noResultsMessage.textContent = "No tags provided to find recommendations.";
+                    noResultsMessage.classList.remove('hidden');
+                    loadingMessage.classList.add('hidden');
+                    return;
+                }
+
+                let books = [];
+                if (mode === 'hybrid') {
+                    books = await fetchHybridRecommendations(tags, alpha);
+                } else {
+                    books = await fetchContentRecommendations(tags);
+                }
+
+                renderRecommendations(books, tags, mode, alpha);
+
+            } catch (error) {
+                console.error("Error fetching recommendations:", error);
+                showMessage(`Error fetching recommendations: ${error.message}`, true);
+                loadingMessage.textContent = `Error fetching recommendations: ${error.message}`;
+            }
+        }
+
+        
+        function renderRecommendations(books, tags, mode = 'hybrid', alpha = 0.5) {
+            loadingMessage.classList.add('hidden');
+
+            // Update header based on mode
+            if (mode === 'hybrid') {
+                recommendationHeader.textContent = 'Hybrid Recommendations';
+                recommendationSubheader.textContent = `Combining content-based and collaborative filtering (α=${alpha})`;
+            } else {
+                recommendationHeader.textContent = 'Content-Based Recommendations';
+                recommendationSubheader.textContent = `Based on tags: ${tags.join(', ')}`;
+            }
+
+            if (books.length === 0) {
+                noResultsMessage.classList.remove('hidden');
+            } else {
+                books.forEach(book => {
+                    const bookCard = renderBookCard(book);
+                    recommendationsContainer.appendChild(bookCard);
+                });
+            }
+        }
+
+        // Function to setup hybrid controls
+        function setupHybridControls() {
+            const alphaSlider = document.getElementById('alpha-slider');
+            const alphaValue = document.getElementById('alpha-value');
+            const modeToggle = document.getElementById('mode-toggle');
+            const scoreToggle = document.getElementById('score-toggle');
+            const tagDisplay = document.getElementById('tag-display');
+
+            // Alpha slider event
+            alphaSlider.addEventListener('input', (e) => {
+                currentAlpha = parseFloat(e.target.value);
+                alphaValue.textContent = currentAlpha.toFixed(1);
+                // Auto-refresh recommendations if we have current tags
+                const urlParams = new URLSearchParams(window.location.search);
+                const tagParam = urlParams.get('tags') || urlParams.get('tag');
+                if (tagParam) {
+                    const tags = tagParam.includes(',') ? tagParam.split(',') : [tagParam];
+                    fetchRecommendations(tags, currentMode, currentAlpha);
+                }
+            });
+
+            // Mode toggle event
+            modeToggle.addEventListener('click', () => {
+                currentMode = currentMode === 'hybrid' ? 'content' : 'hybrid';
+                modeToggle.textContent = currentMode === 'hybrid' ? 'Hybrid' : 'Content';
+                modeToggle.classList.toggle('bg-blue-600', currentMode === 'hybrid');
+                modeToggle.classList.toggle('bg-green-600', currentMode === 'content');
+
+                // Auto-refresh recommendations
+                const urlParams = new URLSearchParams(window.location.search);
+                const tagParam = urlParams.get('tags') || urlParams.get('tag');
+                if (tagParam) {
+                    const tags = tagParam.includes(',') ? tagParam.split(',') : [tagParam];
+                    fetchRecommendations(tags, currentMode, currentAlpha);
+                }
+            });
+
+            // Score toggle event
+            scoreToggle.addEventListener('change', (e) => {
+                showScores = e.target.checked;
+                // Re-render current recommendations with score display toggle
+                const urlParams = new URLSearchParams(window.location.search);
+                const tagParam = urlParams.get('tags') || urlParams.get('tag');
+                if (tagParam) {
+                    const tags = tagParam.includes(',') ? tagParam.split(',') : [tagParam];
+                    fetchRecommendations(tags, currentMode, currentAlpha);
+                }
+            });
+
+            // Update tag display
+            const urlParams = new URLSearchParams(window.location.search);
+            const tagParam = urlParams.get('tags') || urlParams.get('tag');
+            if (tagParam) {
+                const tags = tagParam.includes(',') ? tagParam.split(',') : [tagParam];
+                tagDisplay.textContent = `Tags: ${tags.join(', ')}`;
+            }
+        }
+
+        // Main function to run on page load
+        async function initPage() {
+            try {
+                await initializeFirebaseAndAuth();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const tagParam = urlParams.get('tags') || urlParams.get('tag');
+
+                if (tagParam) {
+                    // Show hybrid controls
+                    document.getElementById('hybrid-controls').classList.remove('hidden');
+                    setupHybridControls();
+
+                    const tags = tagParam.includes(',') ? tagParam.split(',') : [tagParam];
+                    recommendationSubheader.textContent = `Fetching hybrid recommendations...`;
+                    await fetchRecommendations(tags, currentMode, currentAlpha);
+                } else {
+                    loadingMessage.classList.add('hidden');
+                    recommendationSubheader.textContent = `No tags specified for recommendations.`;
+                    noResultsMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error initializing page:", error);
+            }
+        }
+
+        // Fix for continuous navigation: update window.history to keep URL consistent
+        window.addEventListener('popstate', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tagParam = urlParams.get('tags') || urlParams.get('tag');
+            if (tagParam) {
+                const tags = tagParam.includes(',') ? tagParam.split(',') : [tagParam];
+                fetchRecommendations(tags, currentMode, currentAlpha);
+            }
+        });
+
+        window.onload = initPage;
+    </script>
+</body>
+</html>

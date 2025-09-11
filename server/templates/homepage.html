@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Homepage - BookHub</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/js/auth-check.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">
+            <!-- Placeholder for logo image -->
+            <img src="/static/images/logo-placeholder.png" alt="BookHub Logo" />
+            <span>BookHub</span>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/bookTracking" id="bookTrackingTab">Track Now</a></li>
+                <li><a href="/searchResult" id="searchResultTab">Explore</a></li>
+                <li><a href="/faq" id="faqTab">FAQ</a></li>
+            </ul>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 1rem; color: white; font-weight: 500;">
+                <span id="userIdDisplay"></span>
+                <a href="#" id="logoutLink" style="color: white; cursor: pointer; display: none;">Log Out</a>
+                <a href="/login" id="loginTab" style="color: white;">Login</a>
+                <a href="/register" id="registerTab" style="color: white;">Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="banner">
+            <div class="banner-content">
+                <h1>BookHub: Discover Your Next Favorite Book Today!</h1>
+                <p>Get personalized book recommendations tailored just for you. Easily track your reading journey with custom tags and organized lists.</p>
+                <div class="banner-buttons">
+                    <a href="/register" class="btn btn-primary" id="signUpBtn">Sign Up</a>
+                    <a href="/faq" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="banner-image">
+                <!-- Placeholder for banner image -->
+                <img src="/static/images/banner-placeholder.jpg" alt="Books and Reading" />
+            </div>
+        </section>
+
+        <section class="nav-cards">
+            <article class="card">
+                <div class="card-image">
+                    <img src="/static/images/book-tracking-placeholder.jpg" alt="Track Now" />
+                </div>
+                <h2><a href="/bookTracking">Track Now</a></h2>
+                <p>Keep track of your reading progress and manage your book lists.</p>
+            </article>
+            <article class="card">
+                <div class="card-image">
+                    <img src="/static/images/register-placeholder.jpg" alt="Register" />
+                </div>
+                <h2><a href="/register">Register</a></h2>
+                <p>Create an account to personalize your BookHub experience.</p>
+            </article>
+            <article class="card">
+                <div class="card-image">
+                    <img src="/static/images/search-results-placeholder.jpg" alt="Explore" />
+                </div>
+                <h2><a href="/searchResult">Explore</a></h2>
+                <p>Find books and authors with our powerful search feature.</p>
+            </article>
+            <article class="card">
+                <div class="card-image">
+                    <img src="/static/images/faq-placeholder.jpg" alt="FAQ" />
+                </div>
+                <h2><a href="/faq">FAQ</a></h2>
+                <p>Get answers to common questions about BookHub.</p>
+            </article>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-column contact-info">
+            <h3>Contact Information</h3>
+            <p>Email: <a href="mailto:support@bookhub.com">support@bookhub.com</a></p>
+            <p>Phone: +123 456 789</p>
+        </div>
+        <div class="footer-column resources">
+            <h3>Resources</h3>
+            <ul>
+                <li><a href="/readingTips">Reading Tips</a></li>
+                <li><a href="/bookReviews">Book Reviews</a></li>
+                <li><a href="/authorInterviews">Author Interviews</a></li>
+            </ul>
+        </div>
+        <div class="footer-column social-media">
+            <h3>Connect With Us</h3>
+            <ul class="social-icons">
+                <li><a href="#" aria-label="Facebook" class="facebook-icon">Facebook</a></li>
+                <li><a href="#" aria-label="Twitter" class="twitter-icon">Twitter</a></li>
+                <li><a href="#" aria-label="Instagram" class="instagram-icon">Instagram</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <script>
+        // Redirect to login if trying to access bookTracking without authentication
+        document.getElementById('bookTrackingTab').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!auth.currentUser) {
+                window.location.href = '/login';
+            } else {
+                window.location.href = '/bookTracking';
+            }
+        });
+    </script>
+</body>
+</html>

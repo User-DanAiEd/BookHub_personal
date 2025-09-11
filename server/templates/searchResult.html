@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookHub Search Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better content flow */
+            min-height: 100vh;
+            padding: 1.5rem; /* Consistent padding */
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Deeper shadow */
+            width: 100%;
+            max-width: 48rem; /* Max width for content */
+        }
+        .message-box {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50; /* Green for success */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .message-box.error {
+            background-color: #f44336; /* Red for error */
+        }
+        .book-result-card {
+            display: flex; /* Use flexbox for horizontal layout */
+            gap: 1rem; /* Space between cover and content */
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.375rem; /* rounded-md */
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            transition: transform 0.2s ease-in-out;
+            align-items: flex-start; /* Align items to the top */
+        }
+        .book-result-card:hover {
+            transform: translateY(-2px);
+        }
+        .book-cover-container {
+            flex-shrink: 0; /* Prevent cover from shrinking */
+            width: 100px; /* Fixed width for cover */
+            height: 150px; /* Standard book cover aspect ratio (e.g., 100x150) */
+            background-color: #e0e0e0; /* Light gray for cover placeholder */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #666;
+            overflow: hidden;
+            border-radius: 0.25rem; /* Slightly rounded corners for covers */
+        }
+        .book-cover-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the area, cropping if necessary */
+        }
+        .book-content {
+            flex-grow: 1; /* Allow content to take available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Push button to bottom if content is short */
+        }
+        .book-info-text {
+            margin-bottom: 0.5rem; /* Space before button */
+        }
+        .book-title {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: bold;
+            color: #1d4ed8; /* blue-700 */
+            margin-bottom: 0.25rem;
+        }
+        .book-genres, .book-description, .book-author-price, .book-rating, .book-source {
+            font-size: 0.875rem; /* text-sm */
+            color: #4b5563; /* gray-600 */
+            margin-top: 0.125rem;
+        }
+        .book-description {
+            max-height: 3em; /* Limit description height (approx 2 lines) */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Number of lines to show */
+            -webkit-box-orient: vertical;
+        }
+        .add-book-button {
+            background-color: #10b981; /* green-600 */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            transition: background-color 0.3s ease-in-out;
+            font-size: 0.875rem; /* text-sm */
+            cursor: pointer;
+            align-self: flex-end; /* Align button to the right within its flex container */
+            margin-top: 0.5rem; /* Space between description and button */
+        }
+        .add-book-button:hover {
+            background-color: #059669; /* green-700 */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 639px) { /* sm breakpoint */
+            .book-result-card {
+                flex-direction: column; /* Stack vertically */
+                align-items: center; /* Center items when stacked */
+            }
+            .book-cover-container {
+                width: 150px; /* Slightly larger cover on small screens */
+                height: 225px;
+                margin-bottom: 1rem; /* Space below cover */
+            }
+            .book-content {
+                width: 100%; /* Full width for content */
+                align-items: center; /* Center text content */
+            }
+            .book-info-text {
+                text-align: center; /* Center text for better mobile readability */
+            }
+            .add-book-button {
+                width: 100%; /* Full width button on small screens */
+                align-self: stretch; /* Make button stretch full width */
+            }
+        }
+    </style>
+</head>
+<body>
+    <main style="width: 100%; padding: 40px 0; background-color: #f3f4f6; display: flex; justify-content: center;">
+        <div class="container" style="background-color: #ffffff; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); max-width: 600px; width: 100%;">
+            <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Explore</h1>
+
+            <!-- Search Input and Button -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Enter book title, author, or ISBN"
+                    class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                />
+                <button
+                    id="searchButton"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out"
+                >
+                    Search <span id="loadingSpinner" class="loading-spinner hidden"></span>
+                </button>
+            </div>
+
+            <!-- Search Results Section -->
+            <div id="searchResultsContainer" class="space-y-4">
+                <!-- Search results will be dynamically loaded and displayed here by JavaScript -->
+                <p id="noResultsMessage" class="text-gray-500 text-center mt-8">Search for books online to add to your collection!</p>
+                <p id="unregisteredMessage" class="text-gray-500 text-center mt-8" style="display:none;">Please log in or register to add books to your collection.</p>
+            </div>
+
+            <button onclick="window.location.href='/bookTracking'"
+                class="mt-8 bg-gray-600 text-white px-6 py-3 rounded-md shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-300 ease-in-out w-full sm:w-auto">
+                Back
+            </button>
+        </div>
+    </main>
+
+    <!-- Message Box for notifications -->
+    <div id="messageBox" class="message-box"></div>
+
+    <script type="module">
+        // Firebase SDK Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
+            authDomain: "bookhub-80381.firebaseapp.com",
+            projectId: "bookhub-80381",
+            storageBucket: "bookhub-80381.firebasestorage.app",
+            messagingSenderId: "525454852384",
+            appId: "1:525454852384:web:1910c936f8062125779745"
+        };
+
+        // Initialize Firebase
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false; // Flag to ensure auth is ready before Firestore ops
+        // allBooks will now be populated by the online search API
+        let allBooks = []; 
+
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const searchResultsContainer = document.getElementById('searchResultsContainer');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const messageBox = document.getElementById('messageBox');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+
+        // Function to show messages
+        function showMessage(message, isError = false) {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show'; // Reset classes and add 'show'
+            if (isError) {
+                messageBox.classList.add('error');
+            } else {
+                messageBox.classList.remove('error'); // Ensure error class is removed for success
+            }
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        /**
+         * Generates an Open Library cover image URL based on book title.
+         */
+        function getBookCoverUrl(title) {
+            if (!title) {
+                return "https://placehold.co/100x150/e0e0e0/666666?text=No+Cover";
+            }
+            // This function is primarily for local display.
+            // The combined API will provide more accurate cover URLs if available.
+            const encodedTitle = encodeURIComponent(title.toLowerCase().replace(/\s/g, '_').replace(/[^a-z0-9_]/g, ''));
+            return `https://covers.openlibrary.org/b/title/${encodedTitle}-M.jpg`;
+        }
+
+        /**
+         * Fetches the list of books from the new unified Flask backend API.
+         */
+        async function fetchOnlineBooks(query) {
+            loadingSpinner.classList.remove('hidden'); // Show spinner
+            searchButton.disabled = true; // Disable button during search
+            try {
+                const response = await fetch(`/api/online-book-search?query=${encodeURIComponent(query)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allBooks = await response.json();
+                console.log("Books loaded from online API:", allBooks);
+                renderSearchResults(allBooks, query);
+            } catch (error) {
+                console.error("Could not fetch books from online API:", error);
+                showMessage("Error searching books online. Please try again later.", true);
+                renderSearchResults([], query); // Clear results on error
+            } finally {
+                loadingSpinner.classList.add('hidden'); // Hide spinner
+                searchButton.disabled = false; // Re-enable button
+            }
+        }
+
+        /**
+         * Initializes Firebase and sets up authentication.
+         */
+        async function initializeFirebaseAndAuth() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
+                    console.error("Firebase configuration missing or invalid.");
+                    showMessage("Error: Firebase configuration missing.", true);
+                    return;
+                }
+
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                console.log("Firebase app and Firestore initialized.");
+
+        // Listen for authentication state changes
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                isAuthReady = true;
+                console.log("Firebase Auth Ready. User ID:", userId);
+
+                // Show/hide messages based on user type
+                const noResultsMessage = document.getElementById('noResultsMessage');
+                const unregisteredMessage = document.getElementById('unregisteredMessage');
+                if (user.isAnonymous) {
+                    noResultsMessage.style.display = 'none';
+                    unregisteredMessage.style.display = 'block';
+                } else {
+                    noResultsMessage.style.display = 'block';
+                    unregisteredMessage.style.display = 'none';
+                }
+            } else {
+                userId = null;
+                isAuthReady = false;
+                console.log("Firebase Auth State: No user signed in. Attempting anonymous sign-in...");
+                try {
+                    await signInAnonymously(auth);
+                    console.log("Signed in anonymously.");
+                } catch (error) {
+                    console.error("Error signing in anonymously:", error);
+                    showMessage("Error signing in to Firebase.", true);
+                }
+            }
+        });
+
+            } catch (error) {
+                console.error("Error initializing Firebase or signing in:", error);
+                showMessage(`Error setting up app: ${error.message}`, true);
+            }
+        }
+
+        /**
+         * Parses a string representation of a list (e.g., "['item1', 'item2']") into a JavaScript array.
+         * Handles potential errors during parsing.
+         * @param {string} genresString - The string to parse.
+         * @returns {Array<string>} An array of genre strings, or an empty array if parsing fails.
+         */
+        function parseGenresString(genresString) {
+            if (!genresString) {
+                return [];
+            }
+            // If it's already an array (from the new API), return it directly
+            if (Array.isArray(genresString)) {
+                return genresString;
+            }
+            try {
+                // Remove single quotes and replace with double quotes for valid JSON parsing
+                const jsonString = genresString.replace(/'/g, '"');
+                const parsed = JSON.parse(jsonString);
+                // Ensure the parsed result is an array
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.warn("Could not parse genres string:", genresString, "Error:", e);
+                // Fallback: if parsing fails, split by comma and trim, or return as is if single item
+                return genresString.split(',').map(item => item.trim().replace(/\[|\]/g, ''));
+            }
+        }
+
+
+        /**
+         * Performs a search on the fetched list of books.
+         * Now triggers the online API search.
+         */
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            if (searchTerm) {
+                fetchOnlineBooks(searchTerm); // Call the new online search API
+            } else {
+                renderSearchResults([], ''); // Clear results if search term is empty
+                noResultsMessage.textContent = "Please enter a search term.";
+                noResultsMessage.style.display = 'block';
+            }
+        }
+
+        /**
+         * Renders the search results on the page.
+         * @param {Array<Object>} books - An array of book objects to display.
+         * @param {string} searchTerm - The search term used (for no results message).
+         */
+        function renderSearchResults(books, searchTerm) {
+            searchResultsContainer.innerHTML = ''; // Clear previous results
+
+            if (books.length === 0) {
+                noResultsMessage.textContent = searchTerm ? `No online results found for "${searchTerm}". Try a different query.` : "Search for books online to add to your collection!";
+                noResultsMessage.style.display = 'block';
+            } else {
+                noResultsMessage.style.display = 'none';
+                books.forEach(book => {
+                    const bookCard = document.createElement('li');
+                    bookCard.className = 'book-result-card';
+
+                    // Use the cover_url provided by the API, or fallback to generic
+                    const coverImageUrl = book.cover_url || getBookCoverUrl(book.title);
+                    
+                    // The API now returns genres as an array directly
+                    const displayGenres = Array.isArray(book.genres) ? book.genres : [];
+
+                    // Create the book info text content
+                    const bookInfoHtml = `
+                        <div class="book-info-text">
+                            <h3 class="book-title">
+                                ${book.url ? `<a href="${book.url}" target="_blank" class="hover:underline">${book.title || 'Untitled'}</a>` : `<a href="https://www.google.com/search?q=${encodeURIComponent(book.title + ' ' + (book.author || '') + ' book')}" target="_blank" class="hover:underline">${book.title || 'Untitled'}</a>`}
+                            </h3>
+                            ${book.author ? `<p class="book-author-price">Author: ${book.author}</p>` : ''}
+                            ${book.published_date ? `<p class="book-author-price">Published: ${book.published_date}</p>` : ''}
+                            ${book.page_count ? `<p class="book-author-price">Pages: ${book.page_count}</p>` : ''}
+                            ${book.average_rating ? `<p class="book-rating">Rating: ${book.average_rating.toFixed(1)} <i class="fas fa-star text-yellow-500"></i> (${book.ratings_count || 0} ratings)</p>` : ''}
+                            ${displayGenres.length > 0 ? `<p class="book-genres">Genres: ${displayGenres.join(', ')}</p>` : ''}
+                            ${book.description ? `<p class="book-description">Description: ${book.description}</p>` : ''}
+                            ${book.source ? `<p class="book-source text-xs mt-1">Source: ${book.source}</p>` : ''}
+                        </div>
+                    `;
+
+                    // Create the button element separately
+                    const addButton = document.createElement('button');
+                    addButton.type = "button";
+                    addButton.className = "add-book-button";
+                    addButton.textContent = "ADD BOOK"; // Set text content directly
+
+                    // Set data attributes on the button element
+                    addButton.dataset.title = book.title || '';
+                    addButton.dataset.url = book.url || '';
+                    addButton.dataset.description = book.description || '';
+                    addButton.dataset.genres = JSON.stringify(book.genres || []); // Store as JSON string
+                    addButton.dataset.author = book.author || '';
+                    addButton.dataset.publishedDate = book.published_date || ''; // Use published_date from API
+                    addButton.dataset.pageCount = book.page_count || ''; // Use page_count from API
+                    addButton.dataset.averageRating = book.average_rating || 0; // Use average_rating from API
+                    addButton.dataset.ratingsCount = book.ratings_count || 0; // Use ratings_count from API
+                    addButton.dataset.coverUrl = book.cover_url || ''; // Use cover_url from API
+                    addButton.dataset.isbn13 = book.isbn_13 || '';
+                    addButton.dataset.isbn10 = book.isbn_10 || '';
+
+                    // Append elements to the card
+                    bookCard.innerHTML = `
+                        <div class="book-cover-container">
+                            <img src="${coverImageUrl}" alt="Cover of ${book.title || 'Untitled'}" onerror="this.onerror=null;this.src='https://placehold.co/100x150/e0e0e0/666666?text=No+Cover';" />
+                        </div>
+                        <div class="book-content">
+                            ${bookInfoHtml}
+                        </div>
+                    `;
+                    // Append the button *after* setting innerHTML for the book-content div
+                    // Only append the addButton if user is registered (not anonymous)
+                    if (isAuthReady && userId && !auth.currentUser.isAnonymous) {
+                        bookCard.querySelector('.book-content').appendChild(addButton);
+                    }
+
+                    searchResultsContainer.appendChild(bookCard);
+                });
+
+                // Attach event listeners to all "ADD BOOK" buttons after rendering
+                attachAddBookListeners();
+            }
+        }
+
+        // Function to attach event listeners to all "ADD BOOK" buttons
+        function attachAddBookListeners() {
+            const addBookButtons = document.querySelectorAll('.add-book-button');
+            addBookButtons.forEach(button => {
+                    button.addEventListener('click', async () => {
+                        if (!isAuthReady || !userId) {
+                            showMessage("App not ready or user not authenticated. Please wait.", true);
+                            console.error("Attempted add book before auth ready. isAuthReady:", isAuthReady, "userId:", userId);
+                            return;
+                        }
+                        // Restrict adding books to registered (non-anonymous) users only
+                        if (auth.currentUser && auth.currentUser.isAnonymous) {
+                            showMessage("Please log in or register to add books to your collection.", true);
+                            return;
+                        }
+
+                        // Parse genres from the data attribute JSON string into an array
+                        const genresString = button.dataset.genres;
+                        const parsedGenres = JSON.parse(genresString);
+
+                        const bookToAdd = {
+                            title: button.dataset.title,
+                            url: button.dataset.url || `https://www.google.com/search?q=${encodeURIComponent(button.dataset.title + ' ' + button.dataset.author + ' book')}`,
+                            description: button.dataset.description,
+                            genres: parsedGenres,
+                            author: button.dataset.author,
+                            publishedDate: button.dataset.publishedDate,
+                            pageCount: parseInt(button.dataset.pageCount) || 0,
+                            averageRating: parseFloat(button.dataset.averageRating) || 0,
+                            ratingsCount: parseInt(button.dataset.ratingsCount) || 0,
+                            coverUrl: button.dataset.coverUrl,
+                            isbn13: button.dataset.isbn13,
+                            isbn10: button.dataset.isbn10,
+                            addedAt: new Date()
+                        };
+
+                        try {
+                            const trackedBooksCollectionRef = collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/tracked_books`);
+
+                            // Check for duplicates before adding (using title and author as primary check)
+                            const q = query(trackedBooksCollectionRef, 
+                                            where("title", "==", bookToAdd.title),
+                                            where("author", "==", bookToAdd.author));
+                            const querySnapshot = await getDocs(q);
+
+                            if (!querySnapshot.empty) {
+                                showMessage(`"${bookToAdd.title}" by ${bookToAdd.author} is already in your tracking list!`, true);
+                                console.warn(`Duplicate book not added: ${bookToAdd.title}`);
+                                return;
+                            }
+
+                            await addDoc(trackedBooksCollectionRef, bookToAdd);
+                            showMessage(`"${bookToAdd.title}" added to your tracking list!`);
+                            console.log(`Successfully added "${bookToAdd.title}" to Firestore.`);
+
+                                if (confirm(`"${bookToAdd.title}" added to your tracking list! Do you want to go to your Track Now page? Click OK to go, Cancel to stay on this page.`)) {
+                                    window.location.href = '/bookTracking';
+                                } else {
+                                    // Stay on the current search page
+                                }
+                        } catch (error) {
+                            console.error("Error adding book to Firestore:", error);
+                            if (error.code === 'permission-denied') {
+                                showMessage("Permission denied. Check Firestore security rules.", true);
+                            } else {
+                                showMessage(`Failed to add "${bookToAdd.title}". Error: ${error.message}`, true);
+                            }
+                        }
+                    });
+            });
+        }
+
+        // Event listeners for search
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Initialize Firebase and authentication when the window loads
+        window.onload = async () => {
+            await initializeFirebaseAndAuth();
+            // No initial fetch for local CSV books. User must search online.
+        };
+    </script>
+</body>
+</html>

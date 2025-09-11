@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">
+            <span>BookHub</span>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" id="homeTab">Home</a></li>
+                <li><a href="/bookTracking" id="bookTrackingTab">Book Tracking</a></li>
+                <li><a href="/register" id="registerTab">Register</a></li>
+                <li><a href="/searchResult" id="searchResultTab">Book Search</a></li>
+                <li><a href="/faq" id="faqTab">FAQ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div style="max-width: 480px; margin: 2rem auto 1rem auto; padding: 1rem;">
+        <div style="margin-bottom: 1rem; white-space: nowrap;">
+            <a href="/" style="color: #3b82f6; font-weight: bold; text-decoration: none;">← Back to Home</a>
+        </div>
+    </div>
+
+    <main class="container" style="max-width: 400px; margin: 0 auto; padding: 1rem;">
+        <h1>Login</h1>
+        <form id="loginForm" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" required />
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" required />
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p style="margin-top: 1rem;">
+            Don't have an account? <a href="/register">Register here</a>
+        </p>
+        <div id="error-message" class="error" style="color: red; margin-top: 0.5rem"></div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
+            authDomain: "bookhub-80381.firebaseapp.com",
+            projectId: "bookhub-80381",
+            storageBucket: "bookhub-80381.firebasestorage.app",
+            messagingSenderId: "525454852384",
+            appId: "1:525454852384:web:1910c936f8062125779745",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            if (!email || !password) {
+                document.getElementById("error-message").innerText = "Email and password are required.";
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log("User logged in:", user.uid);
+
+                // Check if user profile exists in Firestore
+                const userDocRef = doc(db, `artifacts/${firebaseConfig.projectId}/users/${user.uid}`);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (!userDocSnap.exists()) {
+                    // Create user profile document
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        createdAt: serverTimestamp(),
+                        lastLogin: serverTimestamp(),
+                    });
+                    console.log("User profile created in Firestore");
+                } else {
+                    // Update last login timestamp
+                    await setDoc(userDocRef, {
+                        lastLogin: serverTimestamp(),
+                    }, { merge: true });
+                    console.log("User profile lastLogin updated");
+                }
+
+                window.location.href = "/"; // Redirect to homepage or dashboard
+            } catch (error) {
+                console.error("Login error:", error);
+                let errorMessage = error.message;
+
+                if (error.code === "auth/wrong-password") {
+                    errorMessage = "Incorrect password. Please try again.";
+                } else if (error.code === "auth/user-not-found") {
+                    errorMessage = "No user found with this email.";
+                } else if (error.code === "auth/invalid-email") {
+                    errorMessage = "Please enter a valid email address.";
+                }
+
+                document.getElementById("error-message").innerText = errorMessage;
+            }
+        });
+    </script>
+</body>
+</html>

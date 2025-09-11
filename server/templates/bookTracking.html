@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Book Tracking - BookHub</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+        .header {
+            width: 100%;
+            max-width: 48rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+        }
+        .user-id-display {
+            background-color: #333333;
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+            word-break: break-all;
+            text-align: left;
+        }
+        .guest-user-label {
+            background-color: #d1d5db;
+            color: #000000;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .book-grid {
+            width: 100%;
+            max-width: 48rem;
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .book-card {
+            background-color: #1a1a1a;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            transition: transform 0.2s ease-in-out;
+            align-items: flex-start;
+        }
+        .book-card:hover {
+            transform: translateY(-3px);
+        }
+        .book-cover-container {
+            flex-shrink: 0;
+            width: 100px;
+            height: 150px;
+            background-color: #333333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #ccc;
+            overflow: hidden;
+            border-radius: 0.25rem;
+        }
+        .book-cover-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .book-info-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .book-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #60a5fa;
+            margin-bottom: 0.25rem;
+        }
+        .book-author-price, .book-metadata, .book-rating, .book-genres, .book-description, .book-source {
+            font-size: 0.875rem;
+            color: #a0a0a0;
+            margin-top: 0.125rem;
+        }
+        .book-rating .fa-star {
+            color: #facc15;
+        }
+        .book-description {
+            max-height: 4.5em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            margin-top: 0.5rem;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #444;
+            border-radius: 0.25rem;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            height: 8px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 0.25rem;
+            transition: width 0.5s ease-in-out;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+        .status-not-started { background-color: #ef4444; color: white; }
+        .status-currently-reading { background-color: #3b82f6; color: white; }
+        .status-finished { background-color: #22c55e; color: white; }
+        .action-buttons-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .add-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 9999px;
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .add-button:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #1a1a1a;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .message-box {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .message-box.error {
+            background-color: #f44336;
+        }
+        @media (max-width: 639px) {
+            .book-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .book-cover-container {
+                width: 120px;
+                height: 180px;
+                margin-bottom: 0.5rem;
+            }
+            .book-info-content {
+                width: 100%;
+            }
+            .action-buttons-container {
+                flex-direction: column;
+                width: 100%;
+            }
+            .action-buttons-container button {
+                width: 100%;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+    .back-button-container {
+        width: 100%;
+        max-width: 48rem;
+        margin-bottom: 1rem;
+    }
+    .back-button-link {
+        color: #3b82f6;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .back-button-link:hover {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="back-button-container">
+        <a href="/" class="back-button-link">&#8592; Back to Home</a>
+    </div>
+
+    <header class="header">
+        <h1 class="text-3xl font-bold text-white">My Books</h1>
+        <div id="userIdDisplay" class="user-id-display">Loading User ID...</div>
+        <div id="guestUserMessage" style="display:none; margin-top: 0.5rem;">
+            <span class="guest-user-label">Guest User</span>
+            <p style="color: #a0a0a0; margin-top: 0.25rem; font-size: 0.875rem;">
+                You must be <a href="/login" style="color: #3b82f6; text-decoration: underline;">logged in</a> or <a href="/register" style="color: #3b82f6; text-decoration: underline;">register</a> to access your book tracking list.
+            </p>
+        </div>
+    </header>
+
+    <main id="trackedBooksContainer" class="book-grid">
+        <p id="loadingMessage" class="text-gray-400 text-center col-span-full">Loading your tracked books...</p>
+    </main>
+
+    <button class="add-button" id="addBookButton">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <div id="addBookModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" id="closeModalButton">&times;</button>
+            <h2 class="text-2xl font-bold text-white mb-4 text-center">ADD BOOK</h2>
+            <a href="/search" class="bg-blue-600 text-white px-6 py-3 rounded-md text-lg text-center hover:bg-blue-700 transition duration-300 ease-in-out w-full">
+                Search Online
+            </a>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
+            authDomain: "bookhub-80381.firebaseapp.com",
+            projectId: "bookhub-80381",
+            storageBucket: "bookhub-80381.firebasestorage.app",
+            messagingSenderId: "525454852384",
+            appId: "1:525454852384:web:1910c936f8062125779745"
+        };
+
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+        let unsubscribeBooksListener = null;
+        const appId = firebaseConfig.projectId;
+        let isAnonymousUser = false;
+
+        const trackedBooksContainer = document.getElementById('trackedBooksContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+
+        function formatTimeLong(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        function getBookCoverUrl(title) {
+            if (!title) {
+                return "https://placehold.co/100x150/333333/cccccc?text=No+Cover";
+            }
+            const encodedTitle = encodeURIComponent(title.toLowerCase().replace(/\s/g, '_').replace(/[^a-z0-9_]/g, ''));
+            return `https://covers.openlibrary.org/b/title/${encodedTitle}-M.jpg`;
+        }
+
+        function parseGenresString(genresString) {
+            if (!genresString) {
+                return [];
+            }
+            if (Array.isArray(genresString)) {
+                return genresString;
+            }
+            try {
+                const jsonString = genresString.replace(/'/g, '"');
+                const parsed = JSON.parse(jsonString);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.warn("Could not parse genres string:", genresString, "Error:", e);
+                return genresString.split(',').map(item => item.trim().replace(/\[|\]/g, ''));
+            }
+        }
+
+        function showMessage(message, isError = false) {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show';
+            if (isError) {
+                messageBox.classList.add('error');
+            } else {
+                messageBox.classList.remove('error');
+            }
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        function renderBooks(books) {
+            trackedBooksContainer.innerHTML = '';
+
+            if (books.length === 0) {
+                if (!isAnonymousUser) {
+                    trackedBooksContainer.innerHTML = '<p id="noBooksMessage" class="text-gray-400 text-center col-span-full">No books tracked yet. Click the \'+\' button to add one!</p>';
+                }
+            } else {
+                const noBooksMessage = document.getElementById('noBooksMessage');
+                if (noBooksMessage) noBooksMessage.style.display = 'none';
+
+                books.forEach(book => {
+                    const coverImageUrl = book.coverUrl || getBookCoverUrl(book.title);
+                    const displayGenres = Array.isArray(book.genres) ? book.genres : (typeof book.genres === 'string' ? parseGenresString(book.genres) : []);
+
+                    const currentPage = book.currentPage || 0;
+                    const totalPages = book.pageCount;
+                    let progressPercentage = 0;
+                    let displayStatus = 'Not Started';
+                    let progressBarColor = '#ef4444';
+
+                    if (totalPages && totalPages > 0) {
+                        progressPercentage = Math.min(100, (currentPage / totalPages) * 100);
+                        if (currentPage >= totalPages) {
+                            displayStatus = 'Finished';
+                            progressPercentage = 100;
+                            progressBarColor = '#22c55e';
+                        } else if (currentPage > 0) {
+                            displayStatus = 'Currently Reading';
+                            progressBarColor = '#3b82f6';
+                        }
+                    } else {
+                        displayStatus = currentPage > 0 ? 'Currently Reading' : 'Not Started';
+                        progressBarColor = '#444';
+                    }
+
+                    const bookCardHtml = `
+                        <div class="book-card" data-book-id="${book.id}">
+                            <div class="book-cover-container">
+                                <img src="${coverImageUrl}" alt="Cover of ${book.title || 'Untitled'}" onerror="this.onerror=null;this.src='https://placehold.co/100x150/333333/cccccc?text=No+Cover';" />
+                            </div>
+                            <div class="book-info-content">
+                                <div>
+                                    <h3 class="book-title">
+                                        ${book.url ? `<a href="${book.url}" target="_blank" class="hover:underline">${book.title || 'Untitled'}</a>` : (book.title || 'Untitled')}
+                                    </h3>
+                                    ${book.author ? `<p class="book-author-price">Author: ${book.author}</p>` : ''}
+                                    ${book.price ? `<p class="book-author-price">Price: RM${book.price.toFixed(2)}</p>` : ''}
+                                    ${book.publishedDate ? `<p class="book-metadata">Published: ${book.publishedDate}</p>` : ''}
+                                    ${book.pageCount ? `<p class="book-metadata">Pages: ${book.pageCount}</p>` : ''}
+                                    ${book.averageRating ? `<p class="book-rating">Rating: ${book.averageRating.toFixed(1)} <i class="fas fa-star text-yellow-500"></i> (${book.ratingsCount || 0} ratings)</p>` : ''}
+                                    ${displayGenres.length > 0 ? `<p class="book-genres">Genres: ${displayGenres.join(', ')}</p>` : ''}
+                                    ${book.description ? `<p class="book-description">Description: ${book.description}</p>` : ''}
+                                    ${book.source ? `<p class="book-source text-xs mt-1">Source: ${book.source}</p>` : ''}
+                                    
+                                    <p class="book-metadata mt-2">Progress: ${currentPage}/${totalPages || '?'} (${progressPercentage.toFixed(1)}%)</p>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill" style="width: ${progressPercentage}%; background-color: ${progressBarColor};"></div>
+                                    </div>
+                                    <span class="status-badge ${displayStatus.toLowerCase().replace(' ', '-')}" style="margin-top:0.5rem">${displayStatus}</span>
+                                </div>
+                                <div class="action-buttons-container">
+                                    <button class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition duration-200 start-reading-button" data-book-id="${book.id}">
+                                        Start Reading
+                                    </button>
+                                    <button class="bg-gray-700 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-600 transition duration-200 edit-book-button" data-book-id="${book.id}">
+                                        More Info
+                                    </button>
+                                    <button class="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 transition duration-200 delete-book-button" data-book-id="${book.id}">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    trackedBooksContainer.insertAdjacentHTML('beforeend', bookCardHtml);
+                });
+                attachBookCardButtonListeners();
+            }
+        }
+
+        function attachBookCardButtonListeners() {
+            document.querySelectorAll('.start-reading-button').forEach(button => {
+                button.removeEventListener('click', handleStartReadingClick);
+            });
+            document.querySelectorAll('.edit-book-button').forEach(button => {
+                button.removeEventListener('click', handleEditBookClick);
+            });
+            document.querySelectorAll('.delete-book-button').forEach(button => {
+                button.removeEventListener('click', handleDeleteBookClick);
+            });
+
+            document.querySelectorAll('.start-reading-button').forEach(button => {
+                button.addEventListener('click', handleStartReadingClick);
+            });
+            document.querySelectorAll('.edit-book-button').forEach(button => {
+                button.addEventListener('click', handleEditBookClick);
+            });
+            document.querySelectorAll('.delete-book-button').forEach(button => {
+                button.addEventListener('click', handleDeleteBookClick);
+            });
+        }
+
+        function handleStartReadingClick(event) {
+            const bookId = event.currentTarget.dataset.bookId;
+            window.location.href = `/read?bookId=${bookId}`;
+        }
+
+        function handleEditBookClick(event) {
+            const bookId = event.currentTarget.dataset.bookId;
+            window.location.href = `/summary?bookId=${bookId}`;
+        }
+
+        async function deleteBook(bookId) {
+            if (!userId || !db) {
+                showMessage("Error: Not authenticated or Firebase not initialized.", true);
+                return;
+            }
+
+            const confirmation = confirm("Are you sure you want to delete this book from your collection? This action cannot be undone.");
+            if (!confirmation) {
+                return;
+            }
+
+            try {
+                const bookRef = doc(db, `artifacts/${appId}/users/${userId}/tracked_books`, bookId);
+                await deleteDoc(bookRef);
+                showMessage("Book successfully deleted from your collection!");
+                console.log("Book deleted:", bookId);
+            } catch (error) {
+                showMessage(`Failed to delete book: ${error.message}`, true);
+                console.error("Error deleting book:", error);
+            }
+        }
+
+        function handleDeleteBookClick(event) {
+            const bookId = event.currentTarget.dataset.bookId;
+            deleteBook(bookId);
+        }
+
+        async function initializeFirebaseAndAuth() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
+                    console.error("Firebase configuration missing or invalid.");
+                    showMessage("Error: Firebase configuration missing.", true);
+                    return;
+                }
+
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                console.log("Firebase app and Firestore initialized.");
+
+                onAuthStateChanged(auth, async (user) => {
+                    const addBookButton = document.getElementById('addBookButton');
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        if (!user.email) {
+                            // Anonymous user detected
+                            isAnonymousUser = true;
+                            userIdDisplay.style.display = 'none';
+                            const guestUserMessage = document.getElementById('guestUserMessage');
+                            guestUserMessage.style.display = 'block';
+                            if (addBookButton) addBookButton.style.display = 'none';
+                        } else {
+                            // Registered user
+                            isAnonymousUser = false;
+                            userIdDisplay.style.display = 'inline-block';
+                            userIdDisplay.textContent = userId;
+                            const guestUserMessage = document.getElementById('guestUserMessage');
+                            guestUserMessage.style.display = 'none';
+                            if (addBookButton) addBookButton.style.display = 'flex';
+                        }
+                        console.log("Firebase Auth Ready. User ID:", userId);
+                        listenToTrackedBooks();
+                    } else {
+                        userId = null;
+                        isAuthReady = false;
+                        isAnonymousUser = false;
+                        userIdDisplay.textContent = "Not signed in.";
+                        userIdDisplay.style.display = 'inline-block';
+                        const guestUserMessage = document.getElementById('guestUserMessage');
+                        guestUserMessage.style.display = 'none';
+                        if (addBookButton) addBookButton.style.display = 'flex';
+                        console.log("Firebase Auth State: No user signed in. Attempting anonymous sign-in...");
+                        try {
+                            await signInAnonymously(auth);
+                            console.log("Signed in anonymously.");
+                        } catch (error) {
+                            console.error("Error signing in anonymously:", error);
+                            showMessage("Error signing in to Firebase.", true);
+                            renderBooks([]);
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error initializing Firebase or signing in:", error);
+                showMessage(`Error setting up app: ${error.message}. Check console.`, true);
+                renderBooks([]);
+            }
+        }
+
+        function listenToTrackedBooks() {
+            if (!isAuthReady || !userId) {
+                console.log("Firestore not ready or userId not available for listener.");
+                return;
+            }
+
+            if (unsubscribeBooksListener) {
+                unsubscribeBooksListener();
+                console.log("Unsubscribed from previous books listener.");
+            }
+
+            const trackedBooksCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/tracked_books`);
+            console.log("Setting up real-time listener for path:", `artifacts/${appId}/users/${userId}/tracked_books`);
+
+            unsubscribeBooksListener = onSnapshot(trackedBooksCollectionRef, (snapshot) => {
+                const books = [];
+                snapshot.forEach(doc => {
+                    books.push({ id: doc.id, ...doc.data() });
+                });
+                console.log("Fetched books from Firestore:", books);
+                renderBooks(books);
+                loadingMessage.style.display = 'none';
+            }, (error) => {
+                console.error("Error fetching tracked books:", error);
+                showMessage(`Error fetching books: ${error.message}`, true);
+                loadingMessage.textContent = `Error fetching books: ${error.message}`;
+            });
+        }
+
+        const addBookButton = document.getElementById('addBookButton');
+        const addBookModal = document.getElementById('addBookModal');
+        const closeModalButton = document.getElementById('closeModalButton');
+
+        addBookButton.addEventListener('click', () => {
+            addBookModal.classList.add('show');
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            addBookModal.classList.remove('show');
+        });
+
+        addBookModal.addEventListener('click', (event) => {
+            if (event.target === addBookModal) {
+                addBookModal.classList.remove('show');
+            }
+        });
+
+        window.onload = initializeFirebaseAndAuth;
+    </script>
+</body>
+</html>

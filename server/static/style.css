@@ -1,0 +1,353 @@
+/* Basic styling for login and registration forms */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.auth-controls {
+    display: none !important;
+}
+
+.site-header {
+    display: none;
+}
+
+.site-header.visible {
+    display: flex;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+/* Header styles */
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background-color: #1e3a8a; /* deep blue */
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.site-header .logo {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    gap: 10px;
+}
+
+.site-header .logo img {
+    height: 40px;
+    width: 40px;
+}
+
+.site-header .main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 40px;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.site-header .main-nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.site-header .main-nav ul li a:hover {
+    color: #fbbf24; /* amber accent */
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+/* Banner section */
+.banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 60px 40px;
+    background-color: #3b82f6; /* bright blue */
+    color: white;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.banner-content {
+    max-width: 600px;
+}
+
+.banner-content h1 {
+    font-size: 2.8rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.banner-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.banner-buttons .btn {
+    padding: 12px 28px;
+    font-size: 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    margin-right: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #fbbf24; /* amber */
+    color: #1e3a8a;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #f59e0b;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+.btn-secondary:hover {
+    background-color: white;
+    color: #3b82f6;
+}
+
+.banner-image img {
+    max-width: 400px;
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+form div {
+    margin-bottom: 15px;
+}
+
+/* Navigation cards */
+.nav-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 30px;
+    padding: 50px 40px;
+    background-color: #e0e7ff; /* light blue */
+}
+
+.card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.card-image img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.card h2 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+}
+
+.card h2 a {
+    color: #1e3a8a;
+    text-decoration: none;
+}
+
+.card h2 a:hover {
+    color: #fbbf24;
+}
+
+.card p {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* Footer styles */
+.site-footer {
+    display: flex;
+    justify-content: space-between;
+    background-color: #1e293b; /* dark slate */
+    color: #cbd5e1; /* light slate */
+    padding: 40px 60px;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.footer-column {
+    flex: 1 1 250px;
+}
+
+.footer-column h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: white;
+}
+
+.footer-column p,
+.footer-column a,
+.footer-column ul {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    margin: 0;
+    padding: 0;
+}
+
+.footer-column a {
+    text-decoration: none;
+    color: #cbd5e1;
+    transition: color 0.3s ease;
+}
+
+.footer-column a:hover {
+    color: #fbbf24;
+}
+
+.footer-column ul {
+    list-style: none;
+    margin-top: 10px;
+}
+
+.footer-column ul li {
+    margin-bottom: 8px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icons li a {
+    font-size: 1.2rem;
+    color: #cbd5e1;
+    text-decoration: none;
+}
+
+.social-icons li a:hover {
+    color: #fbbf24;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .banner {
+        flex-direction: column;
+        padding: 40px 20px;
+    }
+
+    .banner-image img {
+        max-width: 100%;
+        margin-top: 20px;
+    }
+
+    .nav-cards {
+        grid-template-columns: 1fr;
+        padding: 30px 20px;
+    }
+
+    .site-footer {
+        flex-direction: column;
+        padding: 30px 20px;
+    }
+}
+
+#userIdDisplay {
+    background-color: transparent;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    display: inline-block;
+    margin-left: 20px;
+    min-width: 150px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.back-button {
+    color: #60a5fa;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}

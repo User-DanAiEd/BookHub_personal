@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - BookHub</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .faq-container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 40px;
+            justify-content: flex-start;
+        }
+        .faq-item {
+            flex: 1 1 calc(50% - 40px);
+            box-sizing: border-box;
+            max-width: none;
+        }
+        .faq-question {
+            white-space: normal;
+        }
+        
+        .faq-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .faq-header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .faq-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .faq-item {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 20px;
+            background: #f8f9fa;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+        
+        .faq-question:hover {
+            background: #e9ecef;
+        }
+        
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-question.active::after {
+            content: '-';
+            transform: rotate(0deg);
+        }
+        
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            background: white;
+        }
+        
+        .faq-answer.active {
+            padding: 20px;
+            max-height: 500px;
+        }
+        
+        .faq-answer p {
+            color: #555;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">
+            <img src="/static/images/logo-placeholder.png" alt="BookHub Logo" />
+            <span>BookHub</span>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" id="homeTab">Home</a></li>
+                <li><a href="/bookTracking" id="bookTrackingTab">Book Tracking</a></li>
+                <li><a href="/register" id="registerTab">Register</a></li>
+                <li><a href="/searchResult" id="searchResultTab">Book Search</a></li>
+                <li><a href="/faq" id="faqTab">FAQ</a></li>
+            </ul>
+        </nav>
+    </header>
+    <button id="backButton" style="background-color: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 0 0 4px 4px; cursor: pointer; position: absolute; top: 110px; left: 20px; z-index: 15; display: inline-block; height: 36px; line-height: 20px; font-weight: 600; font-size: 14px; width: 80px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+        &larr; Back
+    </button>
+
+    <div class="faq-container" style="padding: 0; max-width: 100%; margin: 2rem auto 1rem auto; padding: 1rem 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            <div class="faq-container" style="padding: 0; max-width: 100%; margin: 0 auto;">
+                <div class="faq-header">
+                    <h1>Frequently Asked Questions</h1>
+                    <p>Find answers to common questions about BookHub</p>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">What is BookHub?</button>
+                    <div class="faq-answer">
+                        <p>BookHub is a comprehensive book management platform that helps you discover, track, and organize your reading journey. You can search for books, track your reading progress, create summaries, and get personalized recommendations.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">How do I search for books?</button>
+                    <div class="faq-answer">
+                        <p>Use the search feature on the homepage or navigate to the Search page. You can search by title, author, genre, or keywords. BookHub searches multiple online databases including Google Books and Open Library to provide comprehensive results.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">How do I track my reading progress?</button>
+                    <div class="faq-answer">
+                        <p>After finding a book, you can add it to your tracking list. The system allows you to mark books as "Want to Read," "Currently Reading," or "Finished." You can also add custom tags and notes to each book.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">What are custom tags?</button>
+                    <div class="faq-answer">
+                        <p>Custom tags are labels you can create to categorize your books. For example, you might tag books as "fantasy," "self-help," or "classic-literature." These tags help organize your library and improve book recommendations.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">How does the recommendation system work?</button>
+                    <div class="faq-answer">
+                        <p>Our recommendation system analyzes the books in your library and the custom tags you've created. It then suggests similar books based on genre, themes, and user preferences. The more books you add and tag, the better the recommendations become.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">Can I create reading summaries?</button>
+                    <div class="faq-answer">
+                        <p>Yes! BookHub allows you to create detailed summaries for each book you read. You can add notes, key takeaways, quotes, and personal reflections. These summaries are saved to your account and can be accessed anytime.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">Is my data private?</button>
+                    <div class="faq-answer">
+                        <p>Yes, your reading data and personal information are kept private. We use secure authentication and only store information necessary to provide you with the best reading experience. Your book lists and summaries are only visible to you.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">How do I get started?</button>
+                    <div class="faq-answer">
+                        <p>Simply create an account or log in if you already have one. Then start searching for books, add them to your library, and begin tracking your reading journey. The more you use BookHub, the more personalized your experience becomes!</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">Is BookHub free to use?</button>
+                    <div class="faq-answer">
+                        <p>Yes, BookHub is completely free to use. We believe everyone should have access to great tools for managing their reading journey without any cost barriers.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">How can I contact support?</button>
+                    <div class="faq-answer">
+                        <p>If you have any questions or need assistance, please reach out to our support team at support@bookhub.com. We're here to help you make the most of your reading experience!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
++    <footer
++        style="max-width: 480px; margin: 0 auto 2rem auto; padding: 1rem; text-align: center; color: #666; font-size: 0.875rem"
++    >
++        &copy; 2024 BookHub. All rights reserved.
++    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            const backButton = document.getElementById('backButton');
+
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const answer = this.nextElementSibling;
+                    answer.classList.toggle('active');
+                });
+            });
+
+            backButton.addEventListener('click', () => {
+                window.history.back();
+            });
+        });
+    </script>
+</body>
+</html>

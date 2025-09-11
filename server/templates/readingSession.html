@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Session</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .reading-session-container {
+            background-color: #1a1a1a;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; /* For the exit button */
+        }
+        .book-details-session {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .session-timer {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #60a5fa; /* Blue color */
+            margin-bottom: 2rem;
+        }
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns */
+            gap: 1rem;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+        .control-button {
+            background-color: #4b5563; /* Gray */
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex; /* For icon and text */
+            align-items: center;
+            justify-content: center;
+        }
+        .control-button:hover {
+            background-color: #374151; /* Darker gray */
+        }
+        .control-button i {
+            margin-right: 0.5rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+        }
+        .action-button {
+            flex-grow: 1;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .action-button:active {
+            transform: translateY(1px);
+        }
+        .pause-button {
+            background-color: #f59e0b; /* Amber */
+            color: white;
+        }
+        .pause-button:hover {
+            background-color: #d97706;
+        }
+        .stop-button {
+            background-color: #ef4444; /* Red */
+            color: white;
+        }
+        .stop-button:hover {
+            background-color: #dc2626;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #1a1a1a;
+            padding: 2.5rem; /* Increased padding */
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            width: 90%;
+            max-width: 450px; /* Increased max-width */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Space between sections */
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-title {
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #60a5fa; /* Blue title */
+        }
+        .note-action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            justify-content: center;
+        }
+        .note-action-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex-grow: 1; /* Allow buttons to grow */
+            text-align: center;
+        }
+        .note-action-button:hover {
+            background-color: #2563eb;
+        }
+        .note-input-group {
+            background-color: #333333;
+            border: 1px solid #444444;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .note-input-group i {
+            color: #60a5fa;
+            font-size: 1.25rem;
+        }
+        .note-input-group input, .note-input-group textarea {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .note-input-group textarea {
+            resize: vertical; /* Allow vertical resizing */
+            min-height: 80px;
+        }
+        .modal-save-button {
+            background-color: #22c55e; /* Green */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            margin-top: 1rem; /* Space after input fields */
+        }
+        .modal-save-button:hover {
+            background-color: #16a34a;
+        }
+        .countdown-input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .countdown-input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .countdown-input-group input {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #333333;
+            border: 1px solid #444444;
+            color: white;
+            width: 100%;
+            text-align: center;
+            font-size: 1.125rem;
+        }
+        .countdown-save-button {
+            background-color: #3b82f6; /* Blue */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+        }
+        .countdown-save-button:hover {
+            background-color: #2563eb;
+        }
+
+        /* Stop Session Modal */
+        .stop-session-modal-content {
+            background-color: #1a1a1a;
+            padding: 2.5rem; /* Increased padding */
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            width: 90%;
+            max-width: 450px; /* Increased max-width */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Space between sections */
+        }
+        .stop-session-input-group {
+            background-color: #333333;
+            border: 1px solid #444444;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .stop-session-input-group i {
+            color: #60a5fa;
+            font-size: 1.25rem;
+        }
+        .stop-session-input-group input {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .rating-stars-input {
+            display: flex;
+            justify-content: center; /* Center the stars */
+            gap: 0.25rem; /* Small gap between stars */
+            margin-top: 0.5rem;
+        }
+        .rating-stars-input .star {
+            font-size: 2rem; /* Larger stars */
+            cursor: pointer;
+            color: #444; /* Default grey */
+            transition: color 0.2s ease;
+        }
+        .rating-stars-input .star.selected {
+            color: #facc15; /* Yellow */
+        }
+        .stop-session-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* Space between save and don't save buttons */
+            margin-top: 1.5rem;
+        }
+        .stop-session-buttons-container button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .stop-session-buttons-container #saveSessionButton {
+            background-color: #22c55e; /* Green */
+            color: white;
+        }
+        .stop-session-buttons-container #saveSessionButton:hover {
+            background-color: #16a34a;
+        }
+        .stop-session-buttons-container #dontSaveSessionButton {
+            background-color: #ef4444; /* Red */
+            color: white;
+        }
+        .stop-session-buttons-container #dontSaveSessionButton:hover {
+            background-color: #dc2626;
+        }
+
+        /* Exit Session Button */
+        .exit-session-button {
+            position: absolute;
+            top: 1rem;
+            left: 1rem; /* Placed at top-left */
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: color 0.2s ease;
+        }
+        .exit-session-button:hover {
+            color: #ef4444; /* Red on hover */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 639px) {
+            .control-buttons {
+                grid-template-columns: 1fr; /* Stack buttons on small screens */
+            }
+            .action-buttons {
+                flex-direction: column; /* Stack pause/stop buttons on small screens */
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="reading-session-container">
+        <button class="exit-session-button" id="exitSessionButton"><i class="fas fa-times"></i></button>
+
+        <p class="text-lg text-gray-400">You are reading <span id="sessionCurrentPageDisplay">0</span>/<span id="sessionTotalPagesDisplay">?</span></p>
+        <h2 class="text-3xl font-bold mb-1 text-center" id="sessionBookTitle"></h2>
+        <p class="text-xl text-gray-400 mb-6" id="sessionBookAuthor"></p>
+
+        <div class="session-timer mb-6" id="sessionTimer">00:00:00</div>
+
+        <div class="control-buttons">
+            <button class="control-button" id="addQuoteButton"><i class="fas fa-quote-left"></i> Add Quote</button>
+            <button class="control-button" id="countdownButton"><i class="fas fa-hourglass-half"></i> Countdown</button>
+            <button class="control-button" id="addThoughtButton"><i class="fas fa-lightbulb"></i> Add Thought</button>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-button pause-button" id="pauseSessionButton">PAUSE</button>
+            <button class="action-button stop-button" id="stopSessionButton">STOP</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Add Quote Modal -->
+    <div id="addQuoteModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" id="closeAddQuoteModalButton">&times;</button>
+            <h2 class="modal-title">ADD QUOTE</h2>
+            <div class="note-input-group">
+                <i class="fas fa-hashtag"></i>
+                <input type="number" id="quotePageNumber" placeholder="Page number (optional)" class="flex-grow">
+            </div>
+            <textarea id="quoteTextarea" placeholder="Your quote" class="note-input-group" rows="4"></textarea>
+            <button class="modal-save-button" id="saveQuoteButton">Save Quote</button>
+        </div>
+    </div>
+
+    <!-- Add Thought Modal -->
+    <div id="addThoughtModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" id="closeAddThoughtModalButton">&times;</button>
+            <h2 class="modal-title">ADD THOUGHT</h2>
+            <div class="note-input-group">
+                <i class="fas fa-hashtag"></i>
+                <input type="number" id="thoughtPageNumber" placeholder="Page number (optional)" class="flex-grow">
+            </div>
+            <textarea id="thoughtTextarea" placeholder="Your thought" class="note-input-group" rows="4"></textarea>
+            <button class="modal-save-button" id="saveThoughtButton">Save Thought</button>
+        </div>
+    </div>
+
+    <!-- Countdown Modal -->
+    <div id="countdownModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" id="closeCountdownModalButton">&times;</button>
+            <h2 class="modal-title">SET COUNTDOWN</h2>
+            <div class="countdown-input-grid">
+                <div class="countdown-input-group">
+                    <label for="countdownHours">hours</label>
+                    <input type="number" id="countdownHours" value="00" min="0" max="23">
+                </div>
+                <div class="countdown-input-group">
+                    <label for="countdownMinutes">minutes</label>
+                    <input type="number" id="countdownMinutes" value="00" min="0" max="59">
+                </div>
+            </div>
+            <button class="countdown-save-button" id="startCountdownButton">Save</button>
+        </div>
+    </div>
+
+    <!-- Stop Session Modal -->
+    <div id="stopSessionModal" class="modal-overlay">
+        <div class="stop-session-modal-content">
+            <h2 class="modal-title">FINISH READING</h2>
+            <p class="text-center text-gray-300">Please enter the page you got to</p>
+            <div class="stop-session-input-group">
+                <i class="fas fa-book"></i>
+                <input type="number" id="endPageNumberInput" placeholder="Page number">
+            </div>
+            
+            <div class="text-center text-gray-300 mt-2">Rate this session:</div>
+            <div class="rating-stars-input" id="sessionRatingStars">
+                <span class="star" data-rating="1"><i class="far fa-star"></i></span>
+                <span class="star" data-rating="2"><i class="far fa-star"></i></span>
+                <span class="star" data-rating="3"><i class="far fa-star"></i></span>
+                <span class="star" data-rating="4"><i class="far fa-star"></i></span>
+                <span class="star" data-rating="5"><i class="far fa-star"></i></span>
+            </div>
+
+            <div class="stop-session-buttons-container">
+                <button id="saveSessionButton">Save Session</button>
+                <button id="dontSaveSessionButton">Don't save session</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration (MUST MATCH YOUR PROJECT)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
+            authDomain: "bookhub-80381.firebaseapp.com",
+            projectId: "bookhub-80381",
+            storageBucket: "bookhub-80381.firebasestorage.app",
+            messagingSenderId: "525454852384",
+            appId: "1:525454852384:web:1910c936f8062125779745"
+        };
+
+        // Firebase App & Services
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+        const appId = firebaseConfig.projectId; // Using projectId as appId for consistency
+
+        // Session Variables
+        let currentReadingBook = null;
+        let timerInterval;
+        let countdownInterval;
+        let totalReadTimeSeconds = 0;
+        let startTime = 0;
+        let isPaused = false;
+        let countdownRemainingTime = 0;
+
+        // Data to save for the current session
+        let currentSessionQuotes = [];
+        let currentSessionThoughts = [];
+        let currentRating = 0;
+
+        // DOM Elements
+        const sessionBookTitle = document.getElementById('sessionBookTitle');
+        const sessionBookAuthor = document.getElementById('sessionBookAuthor');
+        const sessionCurrentPageDisplay = document.getElementById('sessionCurrentPageDisplay');
+        const sessionTotalPagesDisplay = document.getElementById('sessionTotalPagesDisplay');
+        const sessionTimer = document.getElementById('sessionTimer');
+        const pauseSessionButton = document.getElementById('pauseSessionButton');
+        const stopSessionButton = document.getElementById('stopSessionButton');
+        const exitSessionButton = document.getElementById('exitSessionButton');
+
+        // Add Quote Modal Elements
+        const addQuoteButton = document.getElementById('addQuoteButton');
+        const addQuoteModal = document.getElementById('addQuoteModal');
+        const closeAddQuoteModalButton = document.getElementById('closeAddQuoteModalButton');
+        const quotePageNumberInput = document.getElementById('quotePageNumber');
+        const quoteTextarea = document.getElementById('quoteTextarea');
+        const saveQuoteButton = document.getElementById('saveQuoteButton');
+
+        // Add Thought Modal Elements
+        const addThoughtButton = document.getElementById('addThoughtButton');
+        const addThoughtModal = document.getElementById('addThoughtModal');
+        const closeAddThoughtModalButton = document.getElementById('closeAddThoughtModalButton');
+        const thoughtPageNumberInput = document.getElementById('thoughtPageNumber');
+        const thoughtTextarea = document.getElementById('thoughtTextarea');
+        const saveThoughtButton = document.getElementById('saveThoughtButton');
+
+        // Countdown Modal Elements
+        const countdownButton = document.getElementById('countdownButton');
+        const countdownModal = document.getElementById('countdownModal');
+        const closeCountdownModalButton = document.getElementById('closeCountdownModalButton');
+        const countdownHoursInput = document.getElementById('countdownHours');
+        const countdownMinutesInput = document.getElementById('countdownMinutes');
+        const startCountdownButton = document.getElementById('startCountdownButton');
+
+        // Stop Session Modal Elements
+        const stopSessionModal = document.getElementById('stopSessionModal');
+        const endPageNumberInput = document.getElementById('endPageNumberInput');
+        const sessionRatingStars = document.getElementById('sessionRatingStars');
+        const saveSessionButton = document.getElementById('saveSessionButton');
+        const dontSaveSessionButton = document.getElementById('dontSaveSessionButton');
+
+        // --- Utility Functions ---
+
+        /**
+         * Formats seconds into HH:MM:SS string.
+         * @param {number} totalSeconds - Total seconds to format.
+         * @returns {string} Formatted time string.
+         */
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return [hours, minutes, seconds]
+                .map(unit => String(unit).padStart(2, '0'))
+                .join(':');
+        }
+
+        /**
+         * Shows a modal overlay.
+         * @param {HTMLElement} modalElement - The modal to show.
+         */
+        function showModal(modalElement) {
+            modalElement.classList.add('show');
+        }
+
+        /**
+         * Hides a modal overlay.
+         * @param {HTMLElement} modalElement - The modal to hide.
+         */
+        function hideModal(modalElement) {
+            modalElement.classList.remove('show');
+            // Clear inputs when hiding
+            if (modalElement === addQuoteModal) {
+                quotePageNumberInput.value = '';
+                quoteTextarea.value = '';
+            } else if (modalElement === addThoughtModal) {
+                thoughtPageNumberInput.value = '';
+                thoughtTextarea.value = '';
+            } else if (modalElement === countdownModal) {
+                countdownHoursInput.value = '00';
+                countdownMinutesInput.value = '00';
+            }
+        }
+
+        // --- Timer Functions ---
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval); // Clear any existing interval
+            startTime = Date.now() - (totalReadTimeSeconds * 1000); // Resume from where it left off
+            
+            timerInterval = setInterval(() => {
+                totalReadTimeSeconds = Math.floor((Date.now() - startTime) / 1000);
+                sessionTimer.textContent = formatTime(totalReadTimeSeconds);
+            }, 1000);
+            isPaused = false;
+            pauseSessionButton.textContent = "PAUSE";
+            pauseSessionButton.classList.remove('bg-blue-600');
+            pauseSessionButton.classList.add('bg-amber-500'); // Amber for pause
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isPaused = true;
+            pauseSessionButton.textContent = "RESUME";
+            pauseSessionButton.classList.remove('bg-amber-500'); // Amber for pause
+            pauseSessionButton.classList.add('bg-blue-600'); // Blue for resume
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            clearInterval(countdownInterval); // Stop countdown too
+            isPaused = true; // Ensure paused state
+            showModal(stopSessionModal);
+            endPageNumberInput.value = currentReadingBook.currentPage || ''; // Pre-fill with current page
+            renderRatingStarsInput(); // Render stars for new rating
+        }
+
+        // --- Countdown Timer Functions ---
+        function startCountdown() {
+            if (countdownInterval) clearInterval(countdownInterval); // Clear any existing countdown
+
+            let remainingSeconds = countdownRemainingTime;
+
+            if (remainingSeconds <= 0) {
+                sessionTimer.textContent = "00:00:00"; // Reset if countdown is 0
+                return;
+            }
+
+            // Temporarily use sessionTimer for countdown display
+            sessionTimer.textContent = formatTime(remainingSeconds);
+            pauseTimer(); // Pause the stopwatch while countdown runs
+
+            countdownInterval = setInterval(() => {
+                remainingSeconds--;
+                if (remainingSeconds < 0) {
+                    clearInterval(countdownInterval);
+                    sessionTimer.textContent = formatTime(totalReadTimeSeconds); // Revert to stopwatch time
+                    startTimer(); // Resume stopwatch
+                    alert("Countdown finished!"); // Use custom message box instead of alert in production
+                    hideModal(countdownModal);
+                } else {
+                    sessionTimer.textContent = formatTime(remainingSeconds);
+                }
+            }, 1000);
+        }
+
+        // --- Rating Stars Logic ---
+        function renderRatingStarsInput() {
+            sessionRatingStars.innerHTML = ''; // Clear existing stars
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.className = `star ${i <= currentRating ? 'selected' : ''}`;
+                star.dataset.rating = i;
+                star.innerHTML = `<i class="${i <= currentRating ? 'fas' : 'far'} fa-star"></i>`; // Solid vs. outline
+                star.addEventListener('click', () => {
+                    currentRating = i;
+                    updateRatingStars(currentRating);
+                });
+                sessionRatingStars.appendChild(star);
+            }
+        }
+
+        function updateRatingStars(rating) {
+            document.querySelectorAll('#sessionRatingStars .star').forEach(star => {
+                const starRating = parseInt(star.dataset.rating);
+                if (starRating <= rating) {
+                    star.classList.add('selected');
+                    star.querySelector('i').classList.replace('far', 'fas');
+                } else {
+                    star.classList.remove('selected');
+                    star.querySelector('i').classList.replace('fas', 'far');
+                }
+            });
+        }
+
+
+        // --- Firebase Initialization & Data Loading ---
+
+        async function initializeFirebaseAndAuth() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
+                    console.error("Firebase configuration missing or invalid.");
+                    alert("Error: Firebase configuration missing. Please check console.");
+                    return;
+                }
+
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                console.log("Firebase app and Firestore initialized.");
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        console.log("Firebase Auth Ready. User ID:", userId);
+                        await loadReadingSessionBook(); // Load book details after auth
+                        startTimer(); // Start timer automatically after loading book
+                    } else {
+                        userId = null;
+                        isAuthReady = false;
+                        console.log("Firebase Auth State: No user signed in. Attempting anonymous sign-in...");
+                        try {
+                            await signInAnonymously(auth);
+                            console.log("Signed in anonymously.");
+                        } catch (error) {
+                            console.error("Error signing in anonymously:", error);
+                            alert("Error signing in to Firebase. Please check console."); // Use custom message box
+                            window.location.href = '/'; // Go back to main page on auth error
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error initializing Firebase or signing in:", error);
+                alert(`Error setting up app: ${error.message}. Please check console.`); // Use custom message box
+                window.location.href = '/'; // Go back to main page on init error
+            }
+        }
+
+        async function loadReadingSessionBook() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('bookId');
+
+            if (!bookId || !userId || !db) {
+                console.error("Book ID, User ID, or Firestore not available.");
+                alert("Error: Missing book information or authentication. Redirecting."); // Use custom message box
+                window.location.href = '/'; // Redirect if no bookId or not authenticated
+                return;
+            }
+
+            try {
+                const bookRef = doc(db, `artifacts/${appId}/users/${userId}/tracked_books`, bookId);
+                const bookSnap = await getDoc(bookRef);
+
+                if (bookSnap.exists()) {
+                    currentReadingBook = { id: bookSnap.id, ...bookSnap.data() };
+                    sessionBookTitle.textContent = currentReadingBook.title || 'Untitled Book';
+                    sessionBookAuthor.textContent = currentReadingBook.author || 'Unknown Author';
+                    sessionCurrentPageDisplay.textContent = currentReadingBook.currentPage || 0;
+                    sessionTotalPagesDisplay.textContent = currentReadingBook.pageCount || '?';
+                    
+                    // Initialize totalReadTimeSeconds from Firestore
+                    totalReadTimeSeconds = currentReadingBook.totalReadTimeSeconds || 0;
+                    sessionTimer.textContent = formatTime(totalReadTimeSeconds);
+
+                    console.log("Loaded book for session:", currentReadingBook);
+                } else {
+                    console.error("No such book found!");
+                    alert("Error: Book not found. Redirecting to your book list."); // Use custom message box
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error("Error loading book details:", error);
+                alert(`Error loading book details: ${error.message}. Redirecting.`); // Use custom message box
+                window.location.href = '/';
+            }
+        }
+
+        async function saveReadingSessionData() {
+            if (!currentReadingBook || !userId || !db) {
+                console.error("Cannot save session: Book data, user ID, or Firestore not available.");
+                return;
+            }
+
+            const bookRef = doc(db, `artifacts/${appId}/users/${userId}/tracked_books`, currentReadingBook.id);
+            
+            const endPage = parseInt(endPageNumberInput.value);
+            const totalPages = currentReadingBook.pageCount;
+
+            // Determine status based on pages read
+            let newStatus = currentReadingBook.status || 'Not Started'; // Default to existing status
+            if (endPage > 0) {
+                if (totalPages && endPage >= totalPages) {
+                    newStatus = 'Finished';
+                } else {
+                    newStatus = 'Currently Reading';
+                }
+            } else if (endPage === 0 && (currentReadingBook.currentPage || 0) === 0) {
+                 newStatus = 'Not Started';
+            }
+            
+            const sessionData = {
+                durationSeconds: totalReadTimeSeconds - (currentReadingBook.totalReadTimeSeconds || 0), // Duration of this specific session
+                startPage: currentReadingBook.currentPage || 0,
+                endPage: endPage,
+                timestamp: new Date(),
+                quotes: currentSessionQuotes,
+                thoughts: currentSessionThoughts,
+                rating: currentRating > 0 ? currentRating : null, // Only save if a rating was given
+            };
+
+            // Calculate new overall rating for the book if a session rating was given
+            let newOverallRating = currentReadingBook.overallRating || 0;
+            let newRatingsCount = currentReadingBook.ratingsCount || 0;
+
+            if (currentRating > 0) {
+                // Simple average calculation. More robust would store all ratings.
+                newOverallRating = (newOverallRating * newRatingsCount + currentRating) / (newRatingsCount + 1);
+                newRatingsCount++;
+            }
+
+
+            try {
+                await updateDoc(bookRef, {
+                    currentPage: endPage,
+                    totalReadTimeSeconds: totalReadTimeSeconds, // Total cumulative time
+                    status: newStatus,
+                    readingSessions: arrayUnion(sessionData), // Add new session to array
+                    lastReadDate: new Date(),
+                    overallRating: newOverallRating,
+                    ratingsCount: newRatingsCount
+                });
+                console.log("Reading session saved successfully!");
+                // Redirect to summary page after saving
+                window.location.href = `/summary?bookId=${currentReadingBook.id}`;
+            } catch (error) {
+                console.error("Error saving reading session:", error);
+                alert(`Error saving session: ${error.message}`); // Use custom message box
+            }
+        }
+
+        // --- Event Listeners ---
+
+        pauseSessionButton.addEventListener('click', () => {
+            if (isPaused) {
+                startTimer();
+            } else {
+                pauseTimer();
+            }
+        });
+
+        stopSessionButton.addEventListener('click', stopTimer);
+
+        exitSessionButton.addEventListener('click', () => {
+            if (confirm("Are you sure you want to exit? Your current session progress will not be saved.")) {
+                clearInterval(timerInterval); // Stop the timer
+                clearInterval(countdownInterval); // Stop any active countdown
+                currentReadingBook = null; // Clear session data
+                totalReadTimeSeconds = 0;
+                currentSessionQuotes = [];
+                currentSessionThoughts = [];
+                currentRating = 0;
+                window.location.href = '/'; // Go back to home page
+            }
+        });
+
+        addQuoteButton.addEventListener('click', () => showModal(addQuoteModal));
+        closeAddQuoteModalButton.addEventListener('click', () => hideModal(addQuoteModal));
+        addQuoteModal.addEventListener('click', (event) => {
+            if (event.target === addQuoteModal) hideModal(addQuoteModal);
+        });
+        saveQuoteButton.addEventListener('click', () => {
+            const page = parseInt(quotePageNumberInput.value) || null;
+            const text = quoteTextarea.value.trim();
+            if (text) {
+                currentSessionQuotes.push({ page, text, timestamp: new Date() });
+                alert("Quote added!"); // Use custom message box
+                hideModal(addQuoteModal);
+            } else {
+                alert("Quote text cannot be empty."); // Use custom message box
+            }
+        });
+
+        addThoughtButton.addEventListener('click', () => showModal(addThoughtModal));
+        closeAddThoughtModalButton.addEventListener('click', () => hideModal(addThoughtModal));
+        addThoughtModal.addEventListener('click', (event) => {
+            if (event.target === addThoughtModal) hideModal(addThoughtModal);
+        });
+        saveThoughtButton.addEventListener('click', () => {
+            const page = parseInt(thoughtPageNumberInput.value) || null;
+            const text = thoughtTextarea.value.trim();
+            if (text) {
+                currentSessionThoughts.push({ page, text, timestamp: new Date() });
+                alert("Thought added!"); // Use custom message box
+                hideModal(addThoughtModal);
+            } else {
+                alert("Thought text cannot be empty."); // Use custom message box
+            }
+        });
+
+        countdownButton.addEventListener('click', () => showModal(countdownModal));
+        closeCountdownModalButton.addEventListener('click', () => hideModal(countdownModal));
+        countdownModal.addEventListener('click', (event) => {
+            if (event.target === countdownModal) hideModal(countdownModal);
+        });
+        startCountdownButton.addEventListener('click', () => {
+            const hours = parseInt(countdownHoursInput.value) || 0;
+            const minutes = parseInt(countdownMinutesInput.value) || 0;
+            countdownRemainingTime = (hours * 3600) + (minutes * 60);
+            if (countdownRemainingTime > 0) {
+                startCountdown();
+                hideModal(countdownModal); // Hide after starting countdown
+            } else {
+                alert("Please set a valid countdown time."); // Use custom message box
+            }
+        });
+
+        sessionRatingStars.addEventListener('click', (event) => {
+            const star = event.target.closest('.star');
+            if (star) {
+                currentRating = parseInt(star.dataset.rating);
+                updateRatingStars(currentRating);
+            }
+        });
+
+        saveSessionButton.addEventListener('click', saveReadingSessionData);
+        dontSaveSessionButton.addEventListener('click', () => {
+            if (confirm("Are you sure you don't want to save this session? All progress will be lost.")) {
+                clearInterval(timerInterval); // Stop the timer
+                clearInterval(countdownInterval); // Stop any active countdown
+                currentReadingBook = null; // Clear session data
+                totalReadTimeSeconds = 0;
+                currentSessionQuotes = [];
+                currentSessionThoughts = [];
+                currentRating = 0;
+                hideModal(stopSessionModal);
+                window.location.href = '/'; // Go back to book tracking page
+            }
+        });
+
+        // Initialize on page load
+        window.onload = initializeFirebaseAndAuth;
+    </script>
+</body>
+</html>
