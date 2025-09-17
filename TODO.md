@@ -1,66 +1,23 @@
-# TODO - Implement Hybrid Filtering in BookHub
+# Fix 401 Authentication Error on /summary Endpoint
 
-## Overview
-This TODO list outlines the tasks required to extend the current BookHub recommendation system from content-based filtering to a hybrid filtering system by incorporating collaborative filtering.
+## Issue
+- Getting 401 Unauthorized error when accessing `/summary?bookId=FKjygu8XoNanQ1GkTA7b`
+- The problem is in summaryPage.html JavaScript code making request to `api/summary` instead of `/api/summary`
+- Additional issue: Missing `loadSummaryPageBookFromData` function for friend mode
 
 ## Tasks
+- [x] Identify the root cause of the 401 error
+- [x] Fix the API endpoint URL in summaryPage.html (add missing leading slash)
+- [x] Create missing `loadSummaryPageBookFromData` function for friend mode
+- [x] Verify the Authorization header is being sent correctly
+- [x] Fix JavaScript errors that were preventing the summary page from loading
 
-### 1. Data Model Enhancements
-- [x] Update Firestore data model to store user ratings (1-5 stars) for tracked books.
-- [x] Implement API endpoint to save user ratings (`/api/rating/save`).
-- [x] Add required dependencies (scikit-learn, numpy, pandas) to requirements.txt.
+## Files Edited
+- server/templates/summaryPage.html - Fixed multiple issues:
+  - Fixed API endpoint URL (changed `api/summary` to `/api/summary`)
+  - Added missing `loadSummaryPageBookFromData` function for friend mode
+  - Function handles read-only view for friend mode (hides edit functionality)
 
-### 2. Collaborative Filtering Implementation
-- [x] Implement methods in `FirebaseRecommendations` class:
-  - [x] Build user-item rating matrix from Firestore data.
-  - [x] Compute item-item similarity matrix using cosine similarity.
-  - [x] Generate collaborative filtering recommendations based on user ratings.
-
-### 3. Hybrid Recommendation Logic
-- [x] Implement method to combine content-based and collaborative recommendations with adjustable weighting (alpha parameter).
-- [x] Update backend API to provide hybrid recommendations endpoint (`/api/recommendations/hybrid`).
-
-### 4. Frontend Updates
-- [x] Add rating UI component (1-5 stars) on book summary pages.
-  - [x] Create star rating widget in HTML/CSS/JS.
-  - [x] Integrate with Firebase to save ratings on user interaction.
-  - [x] Update book summary page template to include rating input.
-- [x] Modify recommendation page to call hybrid recommendation API and display combined results.
-  - [x] Update recommendationPage.html to use new hybrid endpoint.
-  - [x] Add parameters for alpha weighting and tags in API call.
-  - [x] Handle API response and display hybrid recommendations.
-- [ ] Optionally, display contribution of content-based vs collaborative scores.
-  - [ ] Modify recommendation cards to show score breakdown.
-  - [ ] Add UI toggle to switch between content-only and hybrid modes.
-
-### 5. Testing and Validation
-- [ ] Create test users and seed Firestore with sample ratings data.
-  - [ ] Create 5-10 test user accounts in Firebase.
-  - [ ] Add 20+ books to each user's tracked list.
-  - [ ] Assign ratings (1-5) to create overlapping rating patterns.
-- [ ] Test API endpoints for saving ratings and fetching hybrid recommendations.
-  - [ ] Test `/api/rating/save` with valid and invalid data.
-  - [ ] Test `/api/recommendations/hybrid` with different alpha values and tag combinations.
-  - [ ] Verify error handling for missing users/books.
-- [ ] Perform UI testing for rating input and recommendation display.
-  - [ ] Test star rating widget on book summary pages.
-  - [ ] Verify ratings save correctly to Firebase.
-  - [ ] Test recommendation page with hybrid results.
-  - [ ] Check responsive design on different screen sizes.
-- [ ] Tune alpha parameter for best recommendation quality.
-  - [ ] Experiment with alpha values (0.0 to 1.0) and measure recommendation relevance.
-  - [ ] Compare hybrid vs content-only recommendations.
-  - [ ] Gather user feedback on recommendation quality.
-
-### 6. Documentation
-- [x] Update `instructions.md` with hybrid filtering setup and usage instructions.
-- [x] Document API endpoints and data model changes.
-
-## Notes
-- Start with content-based filtering as fallback when collaborative data is insufficient.
-- Consider cold start and sparsity challenges during implementation.
-- Plan for scalability and privacy compliance.
-
----
-
-This TODO list will guide the incremental implementation of hybrid filtering in BookHub.
+## Status
+- ✅ COMPLETED: All authentication and JavaScript issues have been resolved
+- The 401 error should now be fixed and the summary page should load properly for both personal and friend modes

@@ -6,17 +6,18 @@
 
 # Import required libraries
 import os  # For file system operations
-import pandas as pd  # For data manipulation (reading CSV files)
 from flask import Flask, render_template, jsonify, send_from_directory, request  # Flask web framework
-import ast  # For safely evaluating string representations of Python objects
 import traceback  # For detailed error reporting
+from collections import defaultdict
 import requests  # For making HTTP requests to external APIs
 from flask_cors import CORS  # To handle cross-origin requests (important for web apps)
-from firebase_recommendations import FirebaseRecommendations  # Our custom Firebase service
+##from firebase_recommendations import FirebaseRecommendations  # Our custom Firebase service
+from optimized_firebase import OptimizedFirebaseService  # Optimized Firebase service
 import firebase_admin  # Firebase Admin SDK for Python
-from firebase_admin import credentials, firestore  # For Firebase credentials and Firestore database
-
-# Create the Flask application
+from firebase_admin import credentials, firestore, auth  # For Firebase credentials and Firestore database
+# ------------------------------
+# Flask Setup
+# ------------------------------
 # __name__ tells Flask where to find templates and static files
 app = Flask(__name__, template_folder='templates')
 
@@ -27,9 +28,33 @@ CORS(app)
 # Path to local book database (optional - for storing books locally)
 CSV_FILE_PATH = os.path.join(os.path.dirname(__file__), 'book_details.csv')
 
-cred = credentials.Certificate("bookhub-80381-firebase-adminsdk-fbsvc-b3e2365f77.json")
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+SERVICE_ACCOUNT_PATH = os.path.join(os.path.dirname(__file__), 'bookhub-80381-firebase-adminsdk-fbsvc-b3e2365f77.json')
+
+if os.path.exists(SERVICE_ACCOUNT_PATH):
+    cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
+    firebase_admin.initialize_app(cred, {
+        'projectId': 'bookhub-80381'
+    })
+    db = firestore.client()
+    # Initialize optimized Firebase service
+    optimized_firebase = OptimizedFirebaseService('bookhub-80381', SERVICE_ACCOUNT_PATH)
+else:
+    # For testing or when credentials are not available
+    db = None
+    optimized_firebase = None
+
+# Function to verify Firebase ID token
+def verify_firebase_token(id_token):
+    """
+    Verifies the Firebase ID token and returns the decoded token if valid.
+    Returns None if invalid.
+    """
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+        return decoded_token
+    except Exception as e:
+        print(f"Token verification failed: {e}")
+        return None
 
 # ==========================================
 # EXTERNAL API CONFIGURATION
@@ -37,49 +62,6 @@ db = firestore.client()
 # These are the keys and settings for connecting to external book databases
 # Google Books API provides comprehensive book information
 GOOGLE_BOOKS_API_KEY = "AIzaSyCOP27ymhGqjdwBBjKoeUK53ihZg4xzCzo"
-
-# --- Data Loading from CSV (for existing collection and local search) ---
-def load_book_data():
-    """
-    Loads book data from the book_details.csv file using pandas.
-    Returns a list of dictionaries, suitable for JSON serialization.
-    Assumes columns: 'title', 'url', 'description', 'genres', 'author', 'price'.
-    Parses the 'genres' string column into a Python list.
-    """
-    try:
-        df = pd.read_csv(CSV_FILE_PATH)
-
-        if 'id' not in df.columns:
-            df['id'] = 'b' + (df.index + 1).astype(str)
-
-        for col in ['title', 'url', 'description', 'genres', 'author', 'price']:
-            if col not in df.columns:
-                if col == 'price':
-                    df[col] = 0.0
-                else:
-                    df[col] = ''
-
-        if 'price' in df.columns:
-            df['price'] = pd.to_numeric(df['price'], errors='coerce').fillna(0.0)
-
-        if 'genres' in df.columns:
-            df['genres'] = df['genres'].apply(lambda x: ast.literal_eval(x) if pd.notna(x) and x.strip() else [])
-            df['genres'] = df['genres'].apply(lambda x: x if isinstance(x, list) else [])
-
-        return df.to_dict(orient='records')
-    except FileNotFoundError:
-        print(f"Error: book_details.csv not found at {CSV_FILE_PATH}. Please ensure the file exists at this location.")
-        return []
-    except pd.errors.EmptyDataError:
-        print(f"Warning: book_details.csv at {CSV_FILE_PATH} is empty.")
-        return []
-    except Exception as e:
-        print(f"Error loading book data from CSV: {e}")
-        traceback.print_exc()
-        return []
-
-# Load all books once when the application starts
-all_books_from_csv = load_book_data()
 
 # --- External Book Search Functions ---
 
@@ -119,7 +101,7 @@ def search_google_books(query):
                     'author': ', '.join(volume_info.get('authors', [])),
                     'description': volume_info.get('description'),
                     'genres': normalized_genres,
-                    'cover_url': volume_info.get('imageLinks', {}).get('thumbnail'),
+                    'coverUrl': volume_info.get('imageLinks', {}).get('thumbnail'),
                     'published_date': volume_info.get('publishedDate'),
                     'page_count': volume_info.get('pageCount'),
                     'average_rating': volume_info.get('averageRating'),
@@ -148,7 +130,7 @@ def search_open_library(query):
         response.raise_for_status()
         data = response.json()
 
-        books = []
+        books = [] #pass this list of books into cosine similarity , it will return list of similar books, 
         if 'docs' in data:
             for doc in data['docs']:
                 # Open Library often provides ISBNs in a list
@@ -156,13 +138,13 @@ def search_open_library(query):
                 isbn_10 = next((isbn for isbn in doc.get('isbn', []) if len(isbn) == 10), None)
 
                 # Open Library cover URLs are based on OLID or ISBN
-                cover_url = None
+                coverUrl= None
                 if doc.get('cover_i'):
-                    cover_url = f"https://covers.openlibrary.org/b/id/{doc['cover_i']}-M.jpg"
+                    coverUrl= f"https://covers.openlibrary.org/b/id/{doc['cover_i']}-M.jpg"
                 elif isbn_13:
-                    cover_url = f"https://covers.openlibrary.org/b/isbn/{isbn_13}-M.jpg"
+                    coverUrl= f"https://covers.openlibrary.org/b/isbn/{isbn_13}-M.jpg"
                 elif isbn_10:
-                    cover_url = f"https://covers.openlibrary.org/b/isbn/{isbn_10}-M.jpg"
+                    coverUrl= f"https://covers.openlibrary.org/b/isbn/{isbn_10}-M.jpg"
 
                 book = {
                     'id': doc.get('key'), # Open Library key (e.g., /works/OL...)
@@ -170,7 +152,7 @@ def search_open_library(query):
                     'author': ', '.join(doc.get('author_name', [])),
                     'description': doc.get('first_sentence', [''])[0], # Often a first sentence
                     'genres': doc.get('subject', []), # Subjects can act as genres
-                    'cover_url': cover_url,
+                    'coverUrl': coverUrl,
                     'published_date': doc.get('first_publish_year'), # Year only
                     'page_count': doc.get('number_of_pages_median'),
                     'average_rating': doc.get('ratings_average'),
@@ -223,8 +205,8 @@ def normalize_and_deduplicate_books(google_books_results, open_library_results):
             existing_book = unified_books[key]
             if not existing_book.get('description') and ol_book.get('description'):
                 existing_book['description'] = ol_book['description']
-            if not existing_book.get('cover_url') and ol_book.get('cover_url'):
-                existing_book['cover_url'] = ol_book['cover_url']
+            if not existing_book.get('coverUrl') and ol_book.get('coverUrl'):
+                existing_book['coverUrl'] = ol_book['coverUrl']
             if not existing_book.get('page_count') and ol_book.get('page_count'):
                 existing_book['page_count'] = ol_book['page_count']
             if not existing_book.get('average_rating') and ol_book.get('average_rating'):
@@ -236,7 +218,6 @@ def normalize_and_deduplicate_books(google_books_results, open_library_results):
             existing_book['genres'] = list(existing_genres.union(ol_genres))
 
     return list(unified_books.values())
-
 
 # --- Flask Routes ---
 
@@ -254,23 +235,8 @@ def user_info():
     API endpoint to receive authenticated user info from frontend and store in Firestore.
     Expects JSON payload with 'user_id' and 'email'.
     """
-    try:
-        data = request.json
-        user_id = data.get('user_id')
-        email = data.get('email')
-
-        if not user_id or not email:
-            return jsonify({"error": "Missing user_id or email"}), 400
-
-        # Store or update user info in Firestore
-        user_ref = db.collection('users').document(user_id)
-        user_ref.set({
-            'email': email
-        }, merge=True)
-
-        return jsonify({"success": True, "message": "User info saved"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    user = request.headers.get("Authorization")
+    return jsonify({"user": user or "anonymous"}), 200
 
 @app.route('/bookTracking')
 def tracking_page():
@@ -327,52 +293,6 @@ def summary_page():
     book_id = request.args.get('bookId')
     return render_template('summaryPage.html', book_id=book_id)
 
-# --- New Route for Recommendations ---
-@app.route('/api/recommendations', methods=['POST'])
-def recommendations_endpoint():
-    """
-    API endpoint to receive user books and return recommendations.
-    """
-    user_books = request.json.get('userBooks', [])
-
-    if not user_books:
-        return jsonify({"error": "No user books provided"}), 400
-    
-    # We will dynamically create candidate_books by searching for books
-    # that match the tags from the user's books.
-    user_tags = set()
-    for book in user_books:
-      user_tags.update(book.get('tags', []))
-      
-    candidate_books = []
-    for tag in user_tags:
-        # Search external APIs for books with the user's custom tags as a query
-        google_results = search_google_books(tag)
-        open_library_results = search_open_library(tag)
-        combined = normalize_and_deduplicate_books(google_results, open_library_results)
-        # Add a new 'tags' field to the candidate books using the fetched genres
-        for book in combined:
-            book['tags'] = book.get('genres', []) # Use 'genres' as 'tags' for consistency
-        candidate_books.extend(combined)
-
-    # Now, run the recommender with the user's books and the dynamically generated candidate books
-    recommendations = FirebaseRecommendations(user_books, candidate_books)
-    
-    # Return the recommendations as a JSON response
-    return jsonify(recommendations)
-
-@app.route('/books')
-def get_books_json():
-    """
-    API endpoint to return the list of all books loaded from the local CSV.
-    This is primarily for internal use or if you want to display local CSV books
-    separately from online search results.
-    """
-    if not all_books_from_csv:
-        print("Warning: Attempted to serve books, but all_books_from_csv is empty. Check CSV loading at startup.")
-        return jsonify({"error": "No book data available. Check server logs."}), 500
-    return jsonify(all_books_from_csv)
-
 @app.route('/api/online-book-search')
 def online_book_search():
     """
@@ -388,50 +308,17 @@ def online_book_search():
 
     combined_results = normalize_and_deduplicate_books(google_results, open_library_results)
     
-    # Optionally, you can sort the results, e.g., by average_rating or title
+    # We sort the results by average_rating
     # combined_results.sort(key=lambda x: x.get('average_rating', 0), reverse=True)
 
     return jsonify(combined_results)
 
 # --- New API Endpoints for Custom Tags and Recommendations ---
 
-@app.route('/api/tags/save', methods=['POST'])
-def save_custom_tags():
-    """
-    API endpoint to save custom tags for a book to Firebase.
-    """
-    try:
-        data = request.json
-        user_id = data.get('user_id')
-        book_id = data.get('book_id')
-        tags = data.get('tags', [])
-        
-        if not user_id or not book_id or not tags:
-            return jsonify({"error": "Missing required parameters"}), 400
-        
-        # Path to your Firebase service account JSON key file
-        SERVICE_ACCOUNT_PATH = "server/admin_credentials.json"
-
-        # Initialize Firebase recommendations service
-        firebase_rec = FirebaseRecommendations(project_id='bookhub-80381', credentials_path=SERVICE_ACCOUNT_PATH)
-        
-        # Save tags to Firebase
-        success = firebase_rec.save_custom_tags(user_id, book_id, tags)
-        
-        if success:
-            return jsonify({"success": True, "message": "Tags saved successfully"})
-        else:
-            return jsonify({"error": "Failed to save tags"}), 500
-            
-    except Exception as e:
-        print(f"Error in save_custom_tags: {e}")
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/api/recommendations/by-tags', methods=['GET'])
 def get_recommendations_by_tags():
     """
-    API endpoint to get book recommendations based on custom tags.
+    API endpoint to get book recommendations based on custom tags (optimized).
     """
     try:
         user_id = request.args.get('user_id')
@@ -441,11 +328,11 @@ def get_recommendations_by_tags():
         if not user_id or not tags or tags == ['']:
             return jsonify({"error": "Missing required parameters"}), 400
         
-        # Initialize Firebase recommendations service
-        firebase_rec = FirebaseRecommendations('bookhub-80381')
+        if not optimized_firebase:
+            return jsonify({"error": "Firebase service not available"}), 503
         
-        # Get recommendations based on tags
-        recommendations = firebase_rec.get_recommendations_by_tags(user_id, tags, limit)
+        # Use optimized Firebase service
+        recommendations = optimized_firebase.get_recommendations_by_tags_optimized(tags, limit, user_id)
         
         return jsonify({"recommendations": recommendations})
         
@@ -457,7 +344,7 @@ def get_recommendations_by_tags():
 @app.route('/api/recommendations/similar/<book_id>', methods=['GET'])
 def get_similar_books(book_id):
     """
-    API endpoint to get similar books based on tags from a specific book.
+    API endpoint to get similar books based on tags from a specific book (optimized).
     """
     try:
         user_id = request.args.get('user_id')
@@ -466,11 +353,11 @@ def get_similar_books(book_id):
         if not user_id or not book_id:
             return jsonify({"error": "Missing required parameters"}), 400
         
-        # Initialize Firebase recommendations service
-        firebase_rec = FirebaseRecommendations('bookhub-80381')
+        if not optimized_firebase:
+            return jsonify({"error": "Firebase service not available"}), 503
         
-        # Get similar books based on tags
-        similar_books = firebase_rec.get_similar_books_by_tags(user_id, book_id, limit)
+        # Use optimized Firebase service
+        similar_books = optimized_firebase.get_similar_books_optimized(user_id, book_id, limit)
         
         return jsonify({"similar_books": similar_books})
         
@@ -479,100 +366,218 @@ def get_similar_books(book_id):
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/tags/user/<user_id>', methods=['GET'])
-def get_user_tags(user_id):
+#@app.route('/recommendations')
+#def recommendation_page():
+    #"""
+    #Renders the recommendation page (recommendationPage.html).
+    #"""
+    #return render_template('recommendationPage.html')
+
+# --- New Optimized API Endpoints ---
+
+@app.route('/api/popular-books', methods=['GET'])
+def get_popular_books():
     """
-    API endpoint to get all unique custom tags from a user's books.
+    API endpoint to get popular books based on aggregated ratings (optimized).
     """
     try:
-        if not user_id:
-            return jsonify({"error": "Missing user_id parameter"}), 400
-
-        # Initialize Firebase recommendations service
-        firebase_rec = FirebaseRecommendations('bookhub-80381')
-
-        # Get all user tags
-        tags = firebase_rec.get_all_user_tags(user_id)
-
-        return jsonify({"tags": tags})
-
+        limit = int(request.args.get('limit', 20))
+        
+        if not optimized_firebase:
+            return jsonify({"error": "Firebase service not available"}), 503
+        
+        # Use optimized Firebase service
+        popular_books = optimized_firebase.get_popular_books_optimized(limit)
+        
+        return jsonify({"popular_books": popular_books})
+        
     except Exception as e:
-        print(f"Error in get_user_tags: {e}")
+        print(f"Error in get_popular_books: {e}")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/rating/save', methods=['POST'])
-def save_rating():
+@app.route('/api/firebase/stats', methods=['GET'])
+def get_firebase_stats():
     """
-    API endpoint to save user rating for a book.
+    API endpoint to monitor Firebase usage and cache statistics.
     """
+    try:
+        if not optimized_firebase:
+            return jsonify({"error": "Firebase service not available"}), 503
+        
+        stats = optimized_firebase.get_cache_stats()
+        
+        return jsonify({
+            "firebase_stats": stats,
+            "warning": "High read count detected" if stats['read_count'] > 1000 else None
+        })
+        
+    except Exception as e:
+        print(f"Error in get_firebase_stats: {e}")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/firebase/reset-stats', methods=['POST'])
+def reset_firebase_stats():
+    """
+    API endpoint to reset Firebase read count (for testing/monitoring).
+    """
+    try:
+        if not optimized_firebase:
+            return jsonify({"error": "Firebase service not available"}), 503
+        
+        optimized_firebase.reset_read_count()
+        
+        return jsonify({"success": True, "message": "Firebase stats reset"})
+        
+    except Exception as e:
+        print(f"Error in reset_firebase_stats: {e}")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/cache/clear', methods=['POST'])
+def clear_cache():
+    """
+    API endpoint to clear all Firebase cache (for testing).
+    """
+    try:
+        if not optimized_firebase:
+            return jsonify({"error": "Firebase service not available"}), 503
+        
+        optimized_firebase.clear_all_cache()
+        
+        return jsonify({"success": True, "message": "Cache cleared"})
+        
+    except Exception as e:
+        print(f"Error in clear_cache: {e}")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# ----------------- Save Functions ----------------- #
+@app.route("/api/tags/save", methods=["POST"])
+def save_custom_tags():
     try:
         data = request.json
-        user_id = data.get('user_id')
-        book_id = data.get('book_id')
-        rating = data.get('rating')
+        user_id = data.get("user_id")
+        book_id = data.get("book_id")
+        tags = data.get("tags")
+
+        if not user_id or not book_id or not tags:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        success = optimized_firebase.save_custom_tags(user_id, book_id, tags)
+        return jsonify({"success": success})
+    except Exception as e:
+        logging.error(f"Error saving custom tags: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# Ratings
+# ----------------------------
+@app.route("/api/rating/save", methods=["POST"])
+def save_rating_api():
+    try:
+        data = request.json
+        user_id = data.get("user_id")
+        book_id = data.get("book_id")
+        rating = data.get("rating")
+        cover_url = data.get("coverUrl")
+        rated_by = data.get("rated_by")
 
         if not user_id or not book_id or rating is None:
-            return jsonify({"error": "Missing required parameters"}), 400
+            return jsonify({"error": "Missing required fields"}), 400
 
-        if not isinstance(rating, int) or not (1 <= rating <= 5):
-            return jsonify({"error": "Rating must be an integer between 1 and 5"}), 400
-
-        # Initialize Firebase recommendations service
-        firebase_rec = FirebaseRecommendations('bookhub-80381')
-
-        # Save rating to Firebase
-        success = firebase_rec.save_user_rating(user_id, book_id, rating)
-
-        if success:
-            return jsonify({"success": True, "message": "Rating saved successfully"})
-        else:
-            return jsonify({"error": "Failed to save rating"}), 500
-
+        success = optimized_firebase.save_user_rating(
+            user_id=user_id,
+            book_id=book_id,
+            rating=rating,
+            cover_url=cover_url,
+            rated_by=rated_by
+        )
+        return jsonify({"success": success})
     except Exception as e:
-        print(f"Error in save_rating: {e}")
-        traceback.print_exc()
+        logging.error(f"Error saving rating: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/recommendations/hybrid', methods=['GET'])
-def hybrid_recommendations():
-    """
-    API endpoint to get hybrid recommendations combining content-based and collaborative filtering.
-    """
+# ----------------------------
+# Custom Tags
+# ----------------------------
+@app.route("/api/tags/save", methods=["POST"])
+def save_custom_tags_api():
     try:
-        user_id = request.args.get('user_id')
-        tags = request.args.get('tags', '').split(',')
-        alpha = float(request.args.get('alpha', 0.5))
-        limit = int(request.args.get('limit', 10))
+        data = request.json
+        user_id = data.get("user_id")
+        book_id = data.get("book_id")
+        tags = data.get("tags")
 
-        if not user_id or not tags or tags == ['']:
-            return jsonify({"error": "Missing required parameters"}), 400
+        if not user_id or not book_id or not tags:
+            return jsonify({"error": "Missing required fields"}), 400
 
-        if not (0 <= alpha <= 1):
-            return jsonify({"error": "Alpha must be between 0 and 1"}), 400
-
-        # Initialize Firebase recommendations service
-        firebase_rec = FirebaseRecommendations('bookhub-80381')
-
-        # Get hybrid recommendations
-        recommendations = firebase_rec.get_hybrid_recommendations(user_id, tags, alpha, limit)
-
-        return jsonify({"recommendations": recommendations})
-
+        success = optimized_firebase.save_custom_tags(user_id, book_id, tags)
+        return jsonify({"success": success})
     except Exception as e:
-        print(f"Error in hybrid_recommendations: {e}")
-        traceback.print_exc()
+        logging.error(f"Error saving custom tags: {e}")
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/<path:filename>')
+@app.route("/api/tags/user/<user_id>", methods=["GET"])
+def get_user_tags_api(user_id):
+    try:
+        tags = optimized_firebase.get_all_user_tags(user_id)
+        return jsonify({"tags": tags})
+    except Exception as e:
+        logging.error(f"Error fetching user tags: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# Recommendations
+# ----------------------------
+@app.route("/api/recommendations/tags", methods=["POST"])
+def recommendations_by_tags():
+    try:
+        data = request.json
+        user_id = data.get("user_id", "anonymous")
+        tags = data.get("tags", [])
+        limit = data.get("limit", 10)
+
+        recs = optimized_firebase.get_recommendations_by_tags(user_id, tags, limit=limit)
+        return jsonify({"recommendations": recs})
+    except Exception as e:
+        logging.error(f"Error getting tag recommendations: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/recommendations/hybrid", methods=["POST"])
+def recommendations_hybrid():
+    try:
+        data = request.json
+        user_id = data.get("user_id", "anonymous")
+        tags = data.get("tags", [])
+        alpha = float(data.get("alpha", 0.5))
+        limit = data.get("limit", 10)
+
+        recs = optimized_firebase.hybrid_recommendation_optimized(user_id, tags, alpha=alpha, limit=limit)
+        return jsonify({"recommendations": recs})
+    except Exception as e:
+        logging.error(f"Error getting hybrid recommendations: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+# ----------------------------
+# Recommendation Page (Frontend)
+# ----------------------------
+from flask import render_template, request
+
+@app.route('/recommendations')
+def recommendation_page():
+    tag = request.args.get('tag', None)
+    return render_template('recommendationPage.html', tag=tag)
+
+# ----------------- Static File Serving ----------------- #
+@app.route("/", defaults={"filename": "recommendationpage.html"})
+@app.route("/<path:filename>")
 def serve_static(filename):
-    """
-    Serves static files (like CSS, JS, images) from the root directory.
-    This is a fallback and generally, static files are served from a 'static' folder.
-    However, if your HTML refers to files directly in the root, this will serve them.
-    """
-    return send_from_directory('.', filename)
+    return send_from_directory(os.path.join(app.root_path, "../client"), filename)
 
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
     app.run(debug=True, port=8000)

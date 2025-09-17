@@ -296,9 +296,14 @@
         <a href="/" class="back-button-link">&#8592; Back to Home</a>
     </div>
 
-    <header class="header">
+    <header class="header" style="display: flex; justify-content: space-between; align-items: center;">
         <h1 class="text-3xl font-bold text-white">My Books</h1>
-        <div id="userIdDisplay" class="user-id-display">Loading User ID...</div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div id="userIdDisplay" class="user-id-display">Loading User ID...</div>
+            <a href="#" id="logoutLink" style="color: white; cursor: pointer; display: none; font-weight: 600;">Log Out</a>
+            <a id="loginLink" href="/login" style="color: white; cursor: pointer; display: none; font-weight: 600;">Login</a>
+            <a id="registerLink" href="/register" style="color: white; cursor: pointer; display: none; font-weight: 600;">Register</a>
+        </div>
         <div id="guestUserMessage" style="display:none; margin-top: 0.5rem;">
             <span class="guest-user-label">Guest User</span>
             <p style="color: #a0a0a0; margin-top: 0.25rem; font-size: 0.875rem;">
@@ -306,6 +311,10 @@
             </p>
         </div>
     </header>
+
+    <nav style="width: 100%; max-width: 48rem; margin-bottom: 1rem;">
+        <a href="/recommendations" class="back-button-link">Go to Recommendations &#8594;</a>
+    </nav>
 
     <main id="trackedBooksContainer" class="book-grid">
         <p id="loadingMessage" class="text-gray-400 text-center col-span-full">Loading your tracked books...</p>

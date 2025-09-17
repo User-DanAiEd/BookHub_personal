@@ -399,8 +399,8 @@
                     const bookCard = document.createElement('li');
                     bookCard.className = 'book-result-card';
 
-                    // Use the cover_url provided by the API, or fallback to generic
-                    const coverImageUrl = book.cover_url || getBookCoverUrl(book.title);
+                    // Use the coverUrl provided by the API, or fallback to generic
+                    const coverImageUrl = book.coverUrl || getBookCoverUrl(book.title);
                     
                     // The API now returns genres as an array directly
                     const displayGenres = Array.isArray(book.genres) ? book.genres : [];
@@ -437,7 +437,7 @@
                     addButton.dataset.pageCount = book.page_count || ''; // Use page_count from API
                     addButton.dataset.averageRating = book.average_rating || 0; // Use average_rating from API
                     addButton.dataset.ratingsCount = book.ratings_count || 0; // Use ratings_count from API
-                    addButton.dataset.coverUrl = book.cover_url || ''; // Use cover_url from API
+                    addButton.dataset.coverUrl = book.coverUrl || ''; // Use coverUrl from API
                     addButton.dataset.isbn13 = book.isbn_13 || '';
                     addButton.dataset.isbn10 = book.isbn_10 || '';
 

@@ -971,7 +971,7 @@
                         currentBookData.customTags.forEach(tag => {
                             const tagLink = document.createElement('a');
                             tagLink.className = 'tag-item';
-                            tagLink.href = `/templates/recommendationPage.html?tag=${encodeURIComponent(tag)}`;
+                            tagLink.href = `/recommendations?tag=${encodeURIComponent(tag)}`;
                             tagLink.textContent = tag;
                             customTagsListContainerView.appendChild(tagLink);
                         });
@@ -1108,7 +1108,7 @@
             if (tags && tags.length > 0) {
                 tags.forEach(tag => {
                         customTagsListContainerView.innerHTML += `
-                            <a href="/templates/recommendationPage.html?tag=${encodeURIComponent(tag)}" class="tag-item">
+                            <a href="/recommendations?tag=${encodeURIComponent(tag)}" class="tag-item">
                                 ${tag}
                             </a>
                         `;
@@ -1125,7 +1125,7 @@
                 tags.forEach((tag, index) => {
                     currentTagsDisplayEdit.innerHTML += `
                     <span class='tag-item'>
-                        <a href="recommendationPage.html?tag=${encodeURIComponent(tag)}" class="tag-link">
+                        <a href="/recommendations?tag=${encodeURIComponent(tag)}" class="tag-link">
                             ${tag}
                         </a>
                             <button class="delete-tag-btn" data-tag-index="${index}">&times;</button>
