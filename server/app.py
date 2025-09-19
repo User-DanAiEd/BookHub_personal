@@ -11,10 +11,14 @@ import traceback  # For detailed error reporting
 from collections import defaultdict
 import requests  # For making HTTP requests to external APIs
 from flask_cors import CORS  # To handle cross-origin requests (important for web apps)
+from dotenv import load_dotenv  # For loading environment variables from .env file
 ##from firebase_recommendations import FirebaseRecommendations  # Our custom Firebase service
 from optimized_firebase import OptimizedFirebaseService  # Optimized Firebase service
 import firebase_admin  # Firebase Admin SDK for Python
 from firebase_admin import credentials, firestore, auth  # For Firebase credentials and Firestore database
+
+# Load environment variables from .env file
+load_dotenv()
 # ------------------------------
 # Flask Setup
 # ------------------------------
@@ -60,8 +64,14 @@ def verify_firebase_token(id_token):
 # EXTERNAL API CONFIGURATION
 # ==========================================
 # These are the keys and settings for connecting to external book databases
-# Google Books API provides comprehensive book information Use this key in your application by passing it with the key=API_KEY parameter
-GOOGLE_BOOKS_API_KEY = "AIzaSyCOP27ymhGqjdwBBjKoeUK53ihZg4xzCzo"
+# Google Books API provides comprehensive book information - loaded securely from environment variables
+GOOGLE_BOOKS_API_KEY = os.getenv('GOOGLE_BOOKS_API_KEY')
+
+# Print API key status for debugging (without exposing the actual key)
+if GOOGLE_BOOKS_API_KEY:
+    print(f"✅ Google Books API key loaded successfully (length: {len(GOOGLE_BOOKS_API_KEY)})")
+else:
+    print("⚠️  Warning: Google Books API key not found in environment variables")
 
 # --- External Book Search Functions ---
 
@@ -180,42 +190,39 @@ def normalize_and_deduplicate_books(google_books_results, open_library_results):
     """
     unified_books = {} # Use a dictionary for deduplication by ISBN or title+author
 
+    def make_key(book):
+        title = (book.get('title') or "").lower().strip()
+        author = (book.get('author') or "").lower().strip()
+        isbn13 = book.get('isbn_13')
+        isbn10 = book.get('isbn_10')
+        # Use ISBN if available, else title+author
+        return isbn13 or isbn10 or f"{title}-{author}"
+
     # Add Google Books results
     for book in google_books_results:
-        key = book.get('isbn_13') or book.get('isbn_10')
-        if not key:
-            # Fallback key for books without ISBNs
-            key = f"{book['title'].lower()}-{book['author'].lower()}"
-        
-        unified_books[key] = book # Google Books takes precedence if key clashes
+        key = make_key(book)
+        unified_books[key] = book  # Google Books takes precedence
 
-    # Add Open Library results, merging or adding new ones
+    # Add Open Library results
     for ol_book in open_library_results:
-        key = ol_book.get('isbn_13') or ol_book.get('isbn_10')
-        if not key:
-            key = f"{ol_book['title'].lower()}-{ol_book['author'].lower()}"
-
+        key = make_key(ol_book)
         if key not in unified_books:
-            # If not already present, add the Open Library book
             unified_books[key] = ol_book
         else:
-            # If already present (from Google Books), try to merge missing info
-            # Google Books is generally more comprehensive for description/rating
-            # but Open Library might have a better cover or different genres.
-            existing_book = unified_books[key]
-            if not existing_book.get('description') and ol_book.get('description'):
-                existing_book['description'] = ol_book['description']
-            if not existing_book.get('coverUrl') and ol_book.get('coverUrl'):
-                existing_book['coverUrl'] = ol_book['coverUrl']
-            if not existing_book.get('page_count') and ol_book.get('page_count'):
-                existing_book['page_count'] = ol_book['page_count']
-            if not existing_book.get('average_rating') and ol_book.get('average_rating'):
-                existing_book['average_rating'] = ol_book['average_rating']
-            
-            # Merge existing genres
-            existing_genres = set(existing_book.get('genres', []))
+            existing = unified_books[key]
+            # Merge missing fields
+            if not existing.get('description') and ol_book.get('description'):
+                existing['description'] = ol_book['description']
+            if not existing.get('coverUrl') and ol_book.get('coverUrl'):
+                existing['coverUrl'] = ol_book['coverUrl']
+            if not existing.get('page_count') and ol_book.get('page_count'):
+                existing['page_count'] = ol_book['page_count']
+            if not existing.get('average_rating') and ol_book.get('average_rating'):
+                existing['average_rating'] = ol_book['average_rating']
+            # Merge genres
+            existing_genres = set(existing.get('genres', []))
             ol_genres = set(ol_book.get('genres', []))
-            existing_book['genres'] = list(existing_genres.union(ol_genres))
+            existing['genres'] = list(existing_genres.union(ol_genres))
 
     return list(unified_books.values())
 
