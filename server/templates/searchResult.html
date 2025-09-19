@@ -16,6 +16,10 @@
             min-height: 100vh;
             padding: 1.5rem; /* Consistent padding */
             box-sizing: border-box;
+            user-select: none; /* Prevent text selection */
+        }
+        .book-title a {
+            user-select: text; /* Allow text selection on book title links */
         }
         .container {
             background-color: #ffffff;
