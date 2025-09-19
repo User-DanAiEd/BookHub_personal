@@ -5,75 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>BookHub - Home</title>
     <link rel="stylesheet" href="/static/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script type="module" src="/static/js/auth-check.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #f0f0f0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            line-height: 1.6;
         }
+        
         header {
-            background-color: #1f2937;
-            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            padding: 1.2rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(20, 184, 166, 0.1);
         }
+        
         header h1 {
             margin: 0;
             font-weight: 700;
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             color: #ffffff;
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+        
         nav ul {
             list-style: none;
             display: flex;
-            gap: 1.5rem;
+            gap: 2rem;
             margin: 0;
             padding: 0;
         }
+        
         nav ul li a {
-            color: #f0f0f0;
+            color: #e2e8f0;
             text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: color 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            position: relative;
         }
+        
         nav ul li a:hover {
-            color: #3b82f6;
+            color: #14b8a6;
+            background-color: rgba(20, 184, 166, 0.1);
         }
+        
         .user-info {
-            color: #f0f0f0;
-            font-weight: 600;
-            font-size: 1rem;
+            color: #e2e8f0;
+            font-weight: 500;
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
             gap: 1rem;
         }
+        
         #logoutLink {
             cursor: pointer;
-            color: #ef4444;
-            font-weight: 700;
-            text-decoration: underline;
+            color: #f87171;
+            font-weight: 600;
+            text-decoration: none;
             display: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
         }
+        
+        #logoutLink:hover {
+            background-color: rgba(248, 113, 113, 0.1);
+        }
+        
         main {
             flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
+            padding: 3rem 2rem;
             background-image: url('/static/images/books.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             position: relative;
         }
+        
         main::before {
             content: '';
             position: absolute;
@@ -81,28 +111,155 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(18, 18, 18, 0.4);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.75));
             z-index: 1;
         }
+        
         .welcome-message {
             font-size: 1.5rem;
             text-align: center;
-            max-width: 600px;
-            line-height: 1.5;
+            max-width: 800px;
+            line-height: 1.7;
             position: relative;
             z-index: 2;
-            background-color: rgba(18, 18, 18, 0.8);
-            padding: 2rem;
+            background: linear-gradient(135deg, 
+                rgba(20, 184, 166, 0.15) 0%, 
+                rgba(45, 55, 72, 0.95) 15%, 
+                rgba(26, 32, 44, 0.9) 85%, 
+                rgba(139, 92, 246, 0.15) 100%);
+            padding: 3rem 2.5rem;
             border-radius: 12px;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 
+                        0 0 0 2px rgba(20, 184, 166, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, 
+                rgba(20, 184, 166, 0.6) 0%, 
+                rgba(139, 92, 246, 0.4) 50%, 
+                rgba(20, 184, 166, 0.6) 100%) 1;
+            font-weight: 500;
+            color: #f1f5f9;
+            transform: translateY(0);
+            transition: all 0.4s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            cursor: default;
         }
+        
+        .welcome-message::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, 
+                rgba(20, 184, 166, 0.6) 0%, 
+                rgba(139, 92, 246, 0.4) 25%,
+                rgba(6, 182, 212, 0.5) 50%,
+                rgba(139, 92, 246, 0.4) 75%, 
+                rgba(20, 184, 166, 0.6) 100%);
+            border-radius: 14px;
+            z-index: -1;
+            opacity: 0.8;
+        }
+        
+        .welcome-message:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.3), 
+                        0 0 0 3px rgba(20, 184, 166, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            background: linear-gradient(135deg, 
+                rgba(20, 184, 166, 0.2) 0%, 
+                rgba(45, 55, 72, 0.98) 15%, 
+                rgba(26, 32, 44, 0.95) 85%, 
+                rgba(139, 92, 246, 0.2) 100%);
+        }
+        
+        .welcome-message:hover::before {
+            opacity: 1;
+        }
+        
+        .welcome-message .highlight {
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        
+        .welcome-message .subtitle {
+            font-size: 1.3rem;
+            color: #e2e8f0;
+            margin-top: 1.5rem;
+            font-weight: 500;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        
         footer {
-            background-color: #1f2937;
-            color: #9ca3af;
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: #94a3b8;
             text-align: center;
-            padding: 1rem 0;
+            padding: 1.5rem 0;
             font-size: 0.875rem;
+            border-top: 1px solid rgba(20, 184, 166, 0.1);
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            pointer-events: none;
+        }
+        
+        .copy-protection-notice {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(239, 68, 68, 0.95);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .welcome-message {
+                font-size: 1.3rem;
+                padding: 2rem 1.5rem;
+                margin: 0 1rem;
+            }
+            
+            main {
+                padding: 2rem 1rem;
+            }
         }
     </style>
 </head>
@@ -119,17 +276,127 @@
         <div class="user-info">
             <span id="userIdDisplay"></span>
             <a id="logoutLink" style="display:none;">Log Out</a>
-            <a id="loginLink" href="/login" style="display:none; color: #f0f0f0; text-decoration: none; font-weight: 600;">Login</a>
-            <a id="registerLink" href="/register" style="display:none; color: #f0f0f0; text-decoration: none; font-weight: 600;">Register</a>
+            <a id="loginLink" href="/login" style="display:none; color: #e2e8f0; text-decoration: none; font-weight: 500;">Login</a>
+            <a id="registerLink" href="/register" style="display:none; color: #e2e8f0; text-decoration: none; font-weight: 500;">Register</a>
         </div>
     </header>
     <main>
         <div class="welcome-message">
-            Welcome to BookHub! Discover your next favorite book, track your reading progress, and explore personalized recommendations.
+            Welcome to <span class="highlight">BookHub</span><br>
+            Your personal library and reading tracker.
+            <div class="subtitle">
+                Create custom tags, track your reading progress, and get personalized recommendations—all centered around your physical book collection.
+            </div>
         </div>
     </main>
-    <footer>
-        &copy; 2024 BookHub. All rights reserved.
+    <footer id="protected-footer">
+        &copy; 2024 BookHub. All rights reserved. | Content protected by digital rights management.
     </footer>
+    
+    <div class="copy-protection-notice" id="copyNotice">
+        Content is protected. Copying is not allowed.
+    </div>
+
+    <script>
+        // Copy protection functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const footer = document.getElementById('protected-footer');
+            const copyNotice = document.getElementById('copyNotice');
+            
+            // Disable right-click context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showCopyNotice();
+                return false;
+            });
+            
+            // Disable common keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Disable Ctrl+A (Select All)
+                if (e.ctrlKey && e.key === 'a') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                
+                // Disable Ctrl+C (Copy)
+                if (e.ctrlKey && e.key === 'c') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                
+                // Disable Ctrl+V (Paste)
+                if (e.ctrlKey && e.key === 'v') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                
+                // Disable Ctrl+X (Cut)
+                if (e.ctrlKey && e.key === 'x') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                
+                // Disable Ctrl+S (Save)
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                
+                // Disable F12 (Developer Tools)
+                if (e.key === 'F12') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                
+                // Disable Ctrl+Shift+I (Developer Tools)
+                if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                
+                // Disable Ctrl+U (View Source)
+                if (e.ctrlKey && e.key === 'u') {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+            });
+            
+            // Disable text selection on footer
+            footer.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+                showCopyNotice();
+                return false;
+            });
+            
+            // Disable drag
+            footer.addEventListener('dragstart', function(e) {
+                e.preventDefault();
+                showCopyNotice();
+                return false;
+            });
+            
+            function showCopyNotice() {
+                copyNotice.style.display = 'block';
+                setTimeout(function() {
+                    copyNotice.style.display = 'none';
+                }, 2000);
+            }
+            
+            // Additional protection: Clear clipboard if copy is attempted
+            document.addEventListener('copy', function(e) {
+                e.clipboardData.setData('text/plain', '');
+                e.preventDefault();
+                showCopyNotice();
+            });
+        });
+    </script>
 </body>
 </html>

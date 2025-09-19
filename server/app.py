@@ -60,7 +60,7 @@ def verify_firebase_token(id_token):
 # EXTERNAL API CONFIGURATION
 # ==========================================
 # These are the keys and settings for connecting to external book databases
-# Google Books API provides comprehensive book information
+# Google Books API provides comprehensive book information Use this key in your application by passing it with the key=API_KEY parameter
 GOOGLE_BOOKS_API_KEY = "AIzaSyCOP27ymhGqjdwBBjKoeUK53ihZg4xzCzo"
 
 # --- External Book Search Functions ---
