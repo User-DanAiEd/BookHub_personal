@@ -5,117 +5,245 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ - BookHub</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .faq-container {
-            width: 100%;
-            margin: 0 auto;
-            padding: 40px 0;
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            margin: 0;
+            padding: 0;
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px 40px;
-            justify-content: flex-start;
+            flex-direction: column;
+            min-height: 100vh;
+            line-height: 1.6;
         }
-        .faq-item {
-            flex: 1 1 calc(50% - 40px);
-            box-sizing: border-box;
-            max-width: none;
+        
+        header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(20, 184, 166, 0.1);
         }
-        .faq-question {
-            white-space: normal;
+        
+        .logo span {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.9rem;
+            color: #ffffff;
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .main-nav ul li a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+        
+        .main-nav ul li a:hover {
+            color: #14b8a6;
+            background-color: rgba(20, 184, 166, 0.1);
+        }
+        
+        main {
+            flex-grow: 1;
+            padding: 3rem 2rem;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            z-index: 15;
+        }
+        
+        .back-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(20, 184, 166, 0.3);
+        }
+        
+        .faq-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 1rem 2rem 1rem;
         }
         
         .faq-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 3rem;
         }
         
         .faq-header h1 {
-            color: #2c3e50;
             font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .faq-header p {
-            color: #7f8c8d;
+            color: #94a3b8;
             font-size: 1.1rem;
+        }
+        
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
         }
         
         .faq-item {
-            background: white;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, 
+                rgba(45, 55, 72, 0.95), 
+                rgba(26, 32, 44, 0.9));
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 
+                        0 0 0 1px rgba(20, 184, 166, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25), 
+                        0 0 0 1px rgba(20, 184, 166, 0.2);
         }
         
         .faq-question {
-            padding: 20px;
-            background: #f8f9fa;
-            border: none;
             width: 100%;
+            padding: 1.5rem;
+            background: transparent;
+            border: none;
             text-align: left;
             font-size: 1.1rem;
             font-weight: 600;
-            color: #2c3e50;
+            color: #f1f5f9;
             cursor: pointer;
-            display: block;
-            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
         
         .faq-question:hover {
-            background: #e9ecef;
+            color: #14b8a6;
         }
         
         .faq-question::after {
             content: '+';
             font-size: 1.5rem;
+            font-weight: 300;
+            color: #14b8a6;
             transition: transform 0.3s ease;
         }
         
         .faq-question.active::after {
-            content: '-';
-            transform: rotate(0deg);
+            content: '−';
+            transform: rotate(180deg);
         }
         
         .faq-answer {
-            padding: 0 20px;
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
-            background: white;
+            background: rgba(15, 23, 42, 0.3);
         }
         
         .faq-answer.active {
-            padding: 20px;
-            max-height: 500px;
+            max-height: 300px;
+            padding: 1.5rem;
         }
         
         .faq-answer p {
-            color: #555;
-            line-height: 1.6;
+            color: #cbd5e1;
+            line-height: 1.7;
             margin: 0;
+            font-size: 1rem;
         }
         
-        .back-button {
-            display: inline-block;
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+        footer {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: #94a3b8;
+            text-align: center;
+            padding: 1.5rem 0;
+            font-size: 0.875rem;
+            border-top: 1px solid rgba(20, 184, 166, 0.1);
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            position: relative;
         }
         
-        .back-button:hover {
-            background: #2980b9;
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .main-nav ul {
+                gap: 1rem;
+            }
+            
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .faq-header h1 {
+                font-size: 2rem;
+            }
+            
+            .back-button {
+                position: static;
+                margin-bottom: 2rem;
+                align-self: flex-start;
+            }
+            
+            .faq-container {
+                padding: 2rem 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <header class="site-header">
         <div class="logo">
-            <img src="/static/images/logo-placeholder.png" alt="BookHub Logo" />
             <span>BookHub</span>
         </div>
         <nav class="main-nav">
@@ -128,18 +256,19 @@
             </ul>
         </nav>
     </header>
-    <button id="backButton" style="background-color: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 0 0 4px 4px; cursor: pointer; position: absolute; top: 110px; left: 20px; z-index: 15; display: inline-block; height: 36px; line-height: 20px; font-weight: 600; font-size: 14px; width: 80px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-        &larr; Back
-    </button>
 
-    <div class="faq-container" style="padding: 0; max-width: 100%; margin: 2rem auto 1rem auto; padding: 1rem 2rem;">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
-            <div class="faq-container" style="padding: 0; max-width: 100%; margin: 0 auto;">
-                <div class="faq-header">
-                    <h1>Frequently Asked Questions</h1>
-                    <p>Find answers to common questions about BookHub</p>
-                </div>
-                
+    <main>
+        <button id="backButton" class="back-button">
+            ← Back
+        </button>
+
+        <div class="faq-container">
+            <div class="faq-header">
+                <h1>Frequently Asked Questions</h1>
+                <p>Find answers to common questions about BookHub</p>
+            </div>
+            
+            <div class="faq-grid">
                 <div class="faq-item">
                     <button class="faq-question">What is BookHub?</button>
                     <div class="faq-answer">
@@ -211,18 +340,24 @@
                 </div>
             </div>
         </div>
+    </main>
+
+    <footer id="protected-footer">
+        &copy; 2024 BookHub. All rights reserved. | Content protected by digital rights management.
+    </footer>
+
+    <div class="copy-protection-notice" id="copyNotice" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(239, 68, 68, 0.95); color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: 600; z-index: 1000; display: none; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);">
+        Content is protected. Copying is not allowed.
     </div>
-+    <footer
-+        style="max-width: 480px; margin: 0 auto 2rem auto; padding: 1rem; text-align: center; color: #666; font-size: 0.875rem"
-+    >
-+        &copy; 2024 BookHub. All rights reserved.
-+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const faqQuestions = document.querySelectorAll('.faq-question');
             const backButton = document.getElementById('backButton');
+            const footer = document.getElementById('protected-footer');
+            const copyNotice = document.getElementById('copyNotice');
 
+            // FAQ functionality
             faqQuestions.forEach(question => {
                 question.addEventListener('click', function() {
                     this.classList.toggle('active');
@@ -231,8 +366,60 @@
                 });
             });
 
+            // Back button functionality
             backButton.addEventListener('click', () => {
                 window.history.back();
+            });
+
+            // Copy protection functionality
+            // Disable right-click context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showCopyNotice();
+                return false;
+            });
+            
+            // Disable common keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && (e.key === 'a' || e.key === 'c' || e.key === 'v' || e.key === 'x' || e.key === 's')) {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'u')) {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                }
+            });
+            
+            // Disable text selection on footer
+            if (footer) {
+                footer.addEventListener('selectstart', function(e) {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                });
+                
+                footer.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                    showCopyNotice();
+                    return false;
+                });
+            }
+            
+            function showCopyNotice() {
+                copyNotice.style.display = 'block';
+                setTimeout(function() {
+                    copyNotice.style.display = 'none';
+                }, 2000);
+            }
+            
+            // Additional protection: Clear clipboard if copy is attempted
+            document.addEventListener('copy', function(e) {
+                e.clipboardData.setData('text/plain', '');
+                e.preventDefault();
+                showCopyNotice();
             });
         });
     </script>

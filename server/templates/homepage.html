@@ -43,6 +43,12 @@
             background-clip: text;
         }
         
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+        
         nav ul {
             list-style: none;
             display: flex;
@@ -266,18 +272,20 @@
 <body>
     <header class="site-header">
         <h1>BookHub</h1>
-        <nav>
-            <ul>
-                <li><a href="/bookTracking">Book Tracker</a></li>
-                <li><a href="/searchResult">Explore</a></li>
-                <li><a href="/faq">FAQ</a></li>
-            </ul>
-        </nav>
-        <div class="user-info">
-            <span id="userIdDisplay"></span>
-            <a id="logoutLink" style="display:none;">Log Out</a>
-            <a id="loginLink" href="/login" style="display:none; color: #e2e8f0; text-decoration: none; font-weight: 500;">Login</a>
-            <a id="registerLink" href="/register" style="display:none; color: #e2e8f0; text-decoration: none; font-weight: 500;">Register</a>
+        <div class="header-right">
+            <nav>
+                <ul>
+                    <li><a href="/bookTracking">Book Tracker</a></li>
+                    <li><a href="/searchResult">Explore</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <span id="userIdDisplay"></span>
+                <a id="logoutLink" style="display:none;">Log Out</a>
+                <a id="loginLink" href="/login" style="display:none; color: #e2e8f0; text-decoration: none; font-weight: 500;">Login</a>
+                <a id="registerLink" href="/register" style="display:none; color: #e2e8f0; text-decoration: none; font-weight: 500;">Register</a>
+            </div>
         </div>
     </header>
     <main>
