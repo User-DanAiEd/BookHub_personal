@@ -303,6 +303,10 @@ def user_info():
     user = request.headers.get("Authorization")
     return jsonify({"user": user or "anonymous"}), 200
 
+@app.route('/profile')
+def profile():
+    return render_template('profile.html')
+
 @app.route('/bookTracking')
 def tracking_page():
     """

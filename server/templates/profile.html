@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookHub Profile</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            padding: 1.2rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(20, 184, 166, 0.1);
+        }
+        .profile-header h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.9rem;
+            color: #ffffff;
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .back-btn {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .profile-section {
+            background: linear-gradient(135deg, rgba(20,184,166,0.10) 0%, rgba(45,55,72,0.95) 15%, rgba(26,32,44,0.90) 85%, rgba(139,92,246,0.10) 100%);
+            margin: 1.5rem auto;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            max-width: 900px;
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(20,184,166,0.6) 0%, rgba(139,92,246,0.4) 50%, rgba(20,184,166,0.6) 100%) 1;
+        }
+        .profile-info-list { list-style: none; padding: 0; }
+        .profile-info-list li { margin-bottom: 0.5rem; }
+        .books-list { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .book-card {
+            background: #1e293b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            width: 200px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+            color: #e2e8f0;
+        }
+        .status-select { margin-top: 0.5rem; background: #0f172a; color: #f1f5f9; border-radius: 6px; border: 1px solid #14b8a6; }
+        .tag-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .tag-item {
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            color: #fff;
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+        .preferences { display: flex; gap: 2rem; align-items: center; margin-bottom: 1rem; }
+        .stats-dashboard { display: flex; gap: 2rem; margin-top: 1rem; }
+        .stat-card {
+            background: #334155;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            min-width: 150px;
+            text-align: center;
+            color: #f1f5f9;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+        }
+        .dark-mode { background: #222; color: #f3f4f6; }
+    </style>
+</head>
+<body>
+    <header class="profile-header">
+        <nav>
+            <ul style="display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0;">
+                <li><a href="/" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">Home</a></li>
+                <li><a href="/bookTracking" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">Book Tracking</a></li>
+                <li><a href="/searchResult" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">Search</a></li>
+                <li><a href="/faq" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">FAQ</a></li>
+                <li><a href="/profile" style="color: #14b8a6; text-decoration: none; font-weight: 700;">Profile</a></li>
+            </ul>
+        </nav>
+        <h1 style="margin: 0; font-weight: 700; font-size: 1.9rem; color: #ffffff; background: linear-gradient(135deg, #14b8a6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">My Profile</h1>
+    </header>
+    <!-- Back button and upload button removed -->
+            <div class="profile-info-box" style="background: linear-gradient(135deg, rgba(20,184,166,0.10) 0%, rgba(45,55,72,0.95) 15%, rgba(26,32,44,0.90) 85%, rgba(139,92,246,0.10) 100%); border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 1.5rem; max-width: 900px; border: 2px solid; border-image: linear-gradient(135deg, rgba(20,184,166,0.6) 0%, rgba(139,92,246,0.4) 50%, rgba(20,184,166,0.6) 100%) 1; color: #f1f5f9; margin: 1.5rem auto;">
+                <ul class="profile-info-list" id="profileInfoList" style="margin: 0;">
+                    <!-- Populated by JS -->
+                </ul>
+            </div>
+            </div>
+        </section>
+        <section class="profile-section" id="trackedBooksSection">
+            <h2>Tracked Books</h2>
+            <div class="books-list" id="booksList">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+        <section class="profile-section" id="tagsSection">
+            <h2>Books You've Tagged</h2>
+            <div class="tag-list" id="tagList">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+        <section class="profile-section" id="sharedRecommendationsSection">
+            <h2>Shared Recommendations</h2>
+            <div class="books-list" id="sharedRecommendationsList">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+        <section class="profile-section" id="preferencesSection">
+            <h2>Preferences</h2>
+            <div class="preferences">
+                <label>Preferred Genre(s):
+                    <input type="text" id="preferredGenreInput" placeholder="Type genres separated by commas" style="background: #1e293b; color: #f1f5f9; border-radius: 6px; border: 1px solid #14b8a6; padding: 0.5rem; min-width: 220px;" />
+                </label>
+                <label>Font Size:
+                    <input type="range" id="fontSizeRange" min="14" max="22" value="16" />
+                </label>
+            </div>
+        </section>
+        <section class="profile-section" id="statsSection">
+            <h2>Reading Stats Dashboard</h2>
+            <div class="stats-dashboard">
+                <div class="stat-card" id="booksReadPerMonth">
+                    <h3>Books Read/Month</h3>
+                    <div id="booksReadChart"></div>
+                </div>
+                <div class="stat-card" id="averageRatingsGiven">
+                    <h3>Avg. Ratings Given</h3>
+                    <div id="avgRatingsValue"></div>
+                </div>
+                <div class="stat-card" id="mostReadGenre">
+                    <h3>Most-Read Genre</h3>
+                    <div id="mostReadGenreValue"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase config (reuse from summaryPage.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
+            authDomain: "bookhub-80381.firebaseapp.com",
+            projectId: "bookhub-80381",
+            storageBucket: "bookhub-80381.firebasestorage.app",
+            messagingSenderId: "525454852384",
+            appId: "1:525454852384:web:1910c936f8062125779745"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let userId = null;
+        let userProfile = {};
+
+        // Access control: Only allow logged-in users
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "/login";
+                return;
+            }
+            userId = user.uid;
+            userProfile = {
+                username: user.displayName || user.email.split('@')[0],
+                email: user.email,
+                displayName: user.displayName || '',
+                joinDate: user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'
+            };
+            renderProfileInfo();
+            await loadTrackedBooks();
+            await loadTags();
+            await loadSharedRecommendations();
+            await loadStats();
+            loadPreferences();
+        });
+
+        function renderProfileInfo() {
+            const list = document.getElementById('profileInfoList');
+            list.innerHTML = `
+                <li><strong>Username:</strong> ${userProfile.username}</li>
+                <li><strong>Email:</strong> ${userProfile.email}</li>
+                <li><strong>Join Date:</strong> ${userProfile.joinDate}</li>
+            `;
+        }
+
+        // Profile image upload functionality (local preview only, backend upload needed for persistence)
+        const profileImageInput = document.getElementById('profileImageInput');
+        const profileImage = document.getElementById('profileImage');
+        document.getElementById('profileImageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const file = profileImageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    profileImage.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function loadTrackedBooks() {
+            const booksList = document.getElementById('booksList');
+            booksList.innerHTML = '';
+            const booksRef = collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/tracked_books`);
+            const booksSnap = await getDocs(booksRef);
+            booksSnap.forEach(docSnap => {
+                const book = docSnap.data();
+                const bookId = docSnap.id;
+                // Prefer book.coverUrl, fallback to Google Books/Open Library cover, else placeholder
+                let coverUrl = book.coverUrl || book.googleCoverUrl || book.openLibraryCoverUrl || '/static/images/books.jpg';
+                booksList.innerHTML += `
+                    <div class="book-card">
+                        <div class="book-cover-container"><img src="${coverUrl}" alt="Book Cover" /></div>
+                        <div><strong>${book.title}</strong></div>
+                        <div>by ${book.author}</div>
+                        <div>Status: <select class="status-select" data-book-id="${bookId}">
+                            <option value="finished" ${book.status === 'finished' ? 'selected' : ''}>Finished</option>
+                            <option value="currently_reading" ${book.status === 'currently_reading' ? 'selected' : ''}>Currently Reading</option>
+                            <option value="want_to_read" ${book.status === 'want_to_read' ? 'selected' : ''}>Want to Read</option>
+                        </select></div>
+                        <div>Tags: ${(book.customTags || []).map(tag => `<span class='tag-item'>${tag}</span>`).join(' ')}</div>
+                    </div>
+                `;
+            });
+            // Status change handler
+            booksList.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', async (e) => {
+                    const bookId = e.target.getAttribute('data-book-id');
+                    const newStatus = e.target.value;
+                    const bookDoc = doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/tracked_books`, bookId);
+                    await updateDoc(bookDoc, { status: newStatus });
+                });
+            });
+        }
+
+        async function loadTags() {
+            const tagList = document.getElementById('tagList');
+            tagList.innerHTML = '';
+            const booksRef = collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/tracked_books`);
+            const booksSnap = await getDocs(booksRef);
+            let allTags = [];
+            booksSnap.forEach(docSnap => {
+                const book = docSnap.data();
+                if (book.customTags && book.customTags.length > 0) {
+                    allTags = allTags.concat(book.customTags);
+                }
+            });
+            allTags = [...new Set(allTags)];
+            allTags.forEach(tag => {
+                tagList.innerHTML += `<span class="tag-item">${tag}</span>`;
+            });
+        }
+
+        async function loadSharedRecommendations() {
+            // Placeholder: Fetch books rated by friends (implement backend API as needed)
+            const sharedRecommendationsList = document.getElementById('sharedRecommendationsList');
+            sharedRecommendationsList.innerHTML = '<div>Feature coming soon: Your friends rated these books!</div>';
+        }
+
+        function loadPreferences() {
+            // Load and save preferred genre (free text), font size from localStorage
+            const genreInput = document.getElementById('preferredGenreInput');
+            const fontSizeRange = document.getElementById('fontSizeRange');
+            genreInput.value = localStorage.getItem('preferredGenre') || '';
+            genreInput.addEventListener('input', () => {
+                localStorage.setItem('preferredGenre', genreInput.value);
+            });
+            document.body.style.fontSize = fontSizeRange.value + 'px';
+            fontSizeRange.addEventListener('input', () => {
+                document.body.style.fontSize = fontSizeRange.value + 'px';
+                localStorage.setItem('fontSize', fontSizeRange.value);
+            });
+        }
+
+        async function loadStats() {
+            // Books read per month, average ratings, most-read genre
+            const booksRef = collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/tracked_books`);
+            const booksSnap = await getDocs(booksRef);
+            const books = [];
+            booksSnap.forEach(docSnap => books.push(docSnap.data()));
+            // Books read per month
+            const booksReadPerMonth = {};
+            books.forEach(book => {
+                if (book.status === 'finished' && book.finishedDate) {
+                    const month = new Date(book.finishedDate).toLocaleString('default', { month: 'short', year: 'numeric' });
+                    booksReadPerMonth[month] = (booksReadPerMonth[month] || 0) + 1;
+                }
+            });
+            const chartDiv = document.getElementById('booksReadChart');
+            chartDiv.innerHTML = Object.entries(booksReadPerMonth).map(([month, count]) => `<div>${month}: <strong>${count}</strong></div>`).join('');
+            // Average ratings
+            const ratings = books.map(b => b.userRating).filter(r => typeof r === 'number');
+            const avgRatingsValue = document.getElementById('avgRatingsValue');
+            avgRatingsValue.textContent = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
+            // Most-read genre: combine user tags and genres from Google Books/Open Library
+            const genreCounts = {};
+            books.forEach(book => {
+                // From book.genres (Google/Open Library)
+                (book.genres || []).forEach(genre => {
+                    genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+                });
+                // From user customTags
+                (book.customTags || []).forEach(tag => {
+                    genreCounts[tag] = (genreCounts[tag] || 0) + 1;
+                });
+            });
+            let mostReadGenre = 'N/A';
+            let maxCount = 0;
+            Object.entries(genreCounts).forEach(([genre, count]) => {
+                if (count > maxCount) {
+                    mostReadGenre = genre;
+                    maxCount = count;
+                }
+            });
+            document.getElementById('mostReadGenreValue').textContent = mostReadGenre;
+        }
+    </script>
+</body>
+</html>
