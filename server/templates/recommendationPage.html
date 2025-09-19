@@ -105,8 +105,12 @@
           currentIdToken = null;
         }
       } else {
-        userBox.textContent = 'Not signed in';
-        currentIdToken = null;
+        // Prevent unauthorized access and ID generation
+        document.body.innerHTML = `<div style='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0b1220;color:#e6eef8;font-family:Inter,sans-serif;'><h2 style='margin-bottom:1.5rem;'>You must be logged in to view recommendations.</h2><div style='display:flex;gap:2rem;'><a href='/login' style='background:#14b8a6;color:#fff;padding:0.75rem 2rem;border-radius:8px;text-decoration:none;font-weight:600;'>Go to Login</a><a href='/register' style='background:#06b6d4;color:#fff;padding:0.75rem 2rem;border-radius:8px;text-decoration:none;font-weight:600;'>Register</a></div></div>`;
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 3500);
+        return;
       }
     });
 
@@ -208,8 +212,12 @@
       showMessage('Fetching recommendations...');
 
       // Prepare payload
-      // if user authenticated, include their user_id, otherwise attempt anonymous usage
-      const payload = { user_id: (currentUser && currentUser.uid) ? currentUser.uid : 'anonymous', tags, alpha };
+      // Only allow authenticated users
+      if (!currentUser || !currentUser.uid) {
+        showMessage('You must be logged in to fetch recommendations.');
+        return;
+      }
+      const payload = { user_id: currentUser.uid, tags, alpha };
 
       const headers = { "Content-Type": "application/json" };
       // Assuming Firebase Auth is already initialized
