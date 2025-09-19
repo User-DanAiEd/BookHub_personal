@@ -4,41 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookHub Search Interface</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: "Inter", sans-serif;
-            background-color: #f3f4f6; /* Light gray background */
+            background-color: #0f172a;
+            color: #f1f5f9;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Align to top for better content flow */
+            align-items: flex-start;
             min-height: 100vh;
-            padding: 1.5rem; /* Consistent padding */
+            padding: 1.5rem;
             box-sizing: border-box;
-            user-select: none; /* Prevent text selection */
+            user-select: none;
         }
         .book-title a {
-            user-select: text; /* Allow text selection on book title links */
+            user-select: text;
+            color: #14b8a6;
+            text-decoration: none;
+        }
+        .book-title a:hover {
+            color: #06b6d4;
         }
         .container {
-            background-color: #ffffff;
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.95), rgba(26, 32, 44, 0.9));
             padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Deeper shadow */
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(20, 184, 166, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             width: 100%;
-            max-width: 48rem; /* Max width for content */
+            max-width: 48rem;
         }
         .message-box {
             position: fixed;
             top: 1rem;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #4CAF50; /* Green for success */
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
             color: white;
             padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(20, 184, 166, 0.3);
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
@@ -49,27 +56,29 @@
             visibility: visible;
         }
         .message-box.error {
-            background-color: #f44336; /* Red for error */
+            background: rgba(248, 113, 113, 0.95);
+            box-shadow: 0 10px 25px rgba(248, 113, 113, 0.3);
         }
         .book-result-card {
-            display: flex; /* Use flexbox for horizontal layout */
-            gap: 1rem; /* Space between cover and content */
-            background-color: #f9fafb;
+            display: flex;
+            gap: 1rem;
+            background: rgba(15, 23, 42, 0.5);
             padding: 1rem;
-            border-radius: 0.375rem; /* rounded-md */
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-            transition: transform 0.2s ease-in-out;
-            align-items: flex-start; /* Align items to the top */
+            border-radius: 8px;
+            border: 1px solid rgba(20, 184, 166, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            align-items: flex-start;
         }
         .book-result-card:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(20, 184, 166, 0.2);
         }
         .book-cover-container {
-            flex-shrink: 0; /* Prevent cover from shrinking */
-            width: 100px; /* Fixed width for cover */
-            height: 150px; /* Standard book cover aspect ratio (e.g., 100x150) */
-            background-color: #e0e0e0; /* Light gray for cover placeholder */
+            flex-shrink: 0;
+            width: 100px;
+            height: 150px;
+            background-color: #e0e0e0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -77,59 +86,61 @@
             text-align: center;
             color: #666;
             overflow: hidden;
-            border-radius: 0.25rem; /* Slightly rounded corners for covers */
+            border-radius: 4px;
         }
         .book-cover-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Cover the area, cropping if necessary */
+            object-fit: cover;
         }
         .book-content {
-            flex-grow: 1; /* Allow content to take available space */
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Push button to bottom if content is short */
+            justify-content: space-between;
         }
         .book-info-text {
-            margin-bottom: 0.5rem; /* Space before button */
+            margin-bottom: 0.5rem;
         }
         .book-title {
-            font-size: 1.125rem; /* text-lg */
+            font-size: 1.125rem;
             font-weight: bold;
-            color: #1d4ed8; /* blue-700 */
+            color: #f1f5f9;
             margin-bottom: 0.25rem;
         }
         .book-genres, .book-description, .book-author-price, .book-rating, .book-source {
-            font-size: 0.875rem; /* text-sm */
-            color: #4b5563; /* gray-600 */
+            font-size: 0.875rem;
+            color: #e2e8f0;
             margin-top: 0.125rem;
         }
         .book-description {
-            max-height: 3em; /* Limit description height (approx 2 lines) */
+            max-height: 3em;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2; /* Number of lines to show */
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
         }
         .add-book-button {
-            background-color: #10b981; /* green-600 */
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
             color: white;
             padding: 0.5rem 1rem;
-            border-radius: 0.375rem; /* rounded-md */
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-            transition: background-color 0.3s ease-in-out;
-            font-size: 0.875rem; /* text-sm */
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(20, 184, 166, 0.3);
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
             cursor: pointer;
-            align-self: flex-end; /* Align button to the right within its flex container */
-            margin-top: 0.5rem; /* Space between description and button */
+            align-self: flex-end;
+            margin-top: 0.5rem;
+            border: none;
         }
         .add-book-button:hover {
-            background-color: #059669; /* green-700 */
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(20, 184, 166, 0.3);
         }
         .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #3b82f6;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #14b8a6;
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -144,60 +155,61 @@
         }
 
         /* Responsive adjustments for smaller screens */
-        @media (max-width: 639px) { /* sm breakpoint */
+        @media (max-width: 639px) {
             .book-result-card {
-                flex-direction: column; /* Stack vertically */
-                align-items: center; /* Center items when stacked */
+                flex-direction: column;
+                align-items: center;
             }
             .book-cover-container {
-                width: 150px; /* Slightly larger cover on small screens */
+                width: 150px;
                 height: 225px;
-                margin-bottom: 1rem; /* Space below cover */
+                margin-bottom: 1rem;
             }
             .book-content {
-                width: 100%; /* Full width for content */
-                align-items: center; /* Center text content */
+                width: 100%;
+                align-items: center;
             }
             .book-info-text {
-                text-align: center; /* Center text for better mobile readability */
+                text-align: center;
             }
             .add-book-button {
-                width: 100%; /* Full width button on small screens */
-                align-self: stretch; /* Make button stretch full width */
+                width: 100%;
+                align-self: stretch;
             }
         }
     </style>
 </head>
 <body>
-    <main style="width: 100%; padding: 40px 0; background-color: #f3f4f6; display: flex; justify-content: center;">
-        <div class="container" style="background-color: #ffffff; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); max-width: 600px; width: 100%;">
-            <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Explore</h1>
+    <main style="width: 100%; padding: 40px 0; background-color: #0f172a; display: flex; justify-content: center;">
+        <div class="container" style="background: linear-gradient(135deg, rgba(45, 55, 72, 0.95), rgba(26, 32, 44, 0.9)); padding: 2rem; border-radius: 12px; backdrop-filter: blur(20px); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(20, 184, 166, 0.1); border: 1px solid rgba(255, 255, 255, 0.1); max-width: 600px; width: 100%;">
+            <h1 style="font-size: 2.25rem; font-weight: bold; color: #f1f5f9; margin-bottom: 1.5rem; text-align: center;">Explore</h1>
 
             <!-- Search Input and Button -->
-            <div class="flex flex-col sm:flex-row gap-4 mb-8">
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
                 <input
                     type="text"
                     id="searchInput"
                     placeholder="Enter book title, author, or ISBN"
-                    class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                    style="flex-grow: 1; padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(15, 23, 42, 0.5); color: #f1f5f9; font-size: 1rem; transition: all 0.3s ease; box-sizing: border-box;"
                 />
                 <button
                     id="searchButton"
-                    class="bg-blue-600 text-white px-6 py-3 rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out"
+                    style="background: linear-gradient(135deg, #14b8a6, #06b6d4); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(20, 184, 166, 0.3); transition: all 0.3s ease; font-size: 1rem; cursor: pointer; border: none;"
                 >
                     Search <span id="loadingSpinner" class="loading-spinner hidden"></span>
                 </button>
             </div>
 
             <!-- Search Results Section -->
-            <div id="searchResultsContainer" class="space-y-4">
+            <div id="searchResultsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
                 <!-- Search results will be dynamically loaded and displayed here by JavaScript -->
-                <p id="noResultsMessage" class="text-gray-500 text-center mt-8">Search for books online to add to your collection!</p>
-                <p id="unregisteredMessage" class="text-gray-500 text-center mt-8" style="display:none;">Please log in or register to add books to your collection.</p>
+                <p id="noResultsMessage" style="color: #94a3b8; text-align: center; margin-top: 2rem;">Search for books online to add to your collection!</p>
+                <p id="unregisteredMessage" style="color: #94a3b8; text-align: center; margin-top: 2rem; display:none;">Please log in or register to add books to your collection.</p>
             </div>
 
             <button onclick="window.location.href='/bookTracking'"
-                class="mt-8 bg-gray-600 text-white px-6 py-3 rounded-md shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-300 ease-in-out w-full sm:w-auto">
+                style="margin-top: 2rem; background: linear-gradient(135deg, #2d3748, #1a202c); color: #f1f5f9; padding: 0.75rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; font-size: 1rem; cursor: pointer; border: none; width: 100%;"
+            >
                 Back
             </button>
         </div>
