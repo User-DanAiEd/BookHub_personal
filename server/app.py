@@ -75,21 +75,42 @@ else:
 
 # --- External Book Search Functions ---
 
-def search_google_books(query):
-    """Searches Google Books API for the given query."""
-    url = f"https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=20"
+def search_google_books(search_params):
+    """Searches Google Books API using advanced search parameters."""
+    # Build query string using Google Books search operators
+    query_parts = []
+    if search_params.get('title'):
+        query_parts.append(f"intitle:{search_params['title']}")
+    if search_params.get('author'):
+        query_parts.append(f"inauthor:{search_params['author']}")
+    if search_params.get('publisher'):
+        query_parts.append(f"inpublisher:{search_params['publisher']}")
+    if search_params.get('genre'):
+        query_parts.append(f"subject:{search_params['genre']}")
+    # Note: Google Books API date filtering is not very precise, so we'll filter after fetching
+
+    # If no specific parameters, use title as general query
+    if not query_parts:
+        query = search_params.get('title', '')
+    else:
+        query = ' '.join(query_parts)
+
+    if not query:
+        return []
+
+    url = f"https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=40"  # Get more results for filtering
     if GOOGLE_BOOKS_API_KEY:
         url += f"&key={GOOGLE_BOOKS_API_KEY}"
     try:
         response = requests.get(url)
         response.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
         data = response.json()
-        
+
         books = []
         if 'items' in data:
             for item in data['items']:
                 volume_info = item.get('volumeInfo', {})
-                
+
                 # Extract ISBNs
                 isbns = {}
                 for identifier in volume_info.get('industryIdentifiers', []):
@@ -120,9 +141,24 @@ def search_google_books(query):
                     'isbn_10': isbns.get('isbn_10'),
                     'source': 'Google Books'
                 }
+
                 # Filter out books with no title or author
                 if book['title'] and book['author']:
                     books.append(book)
+
+        # Post-process filtering for year if specified
+        if search_params.get('year'):
+            target_year = search_params['year'].strip()
+            filtered_books = []
+            for book in books:
+                published_date = book.get('published_date', '')
+                if published_date:
+                    # Extract year from published_date (handles various formats like "1991", "1991-01-01", etc.)
+                    book_year = published_date.split('-')[0]
+                    if book_year == target_year:
+                        filtered_books.append(book)
+            books = filtered_books
+
         return books
     except requests.exceptions.RequestException as e:
         print(f"Error searching Google Books: {e}")
@@ -132,15 +168,37 @@ def search_google_books(query):
         traceback.print_exc()
         return []
 
-def search_open_library(query):
-    """Searches Open Library API for the given query."""
+def search_open_library(search_params):
+    """Searches Open Library API using search parameters."""
+    # Build query string for Open Library
+    query_parts = []
+    if search_params.get('title'):
+        query_parts.append(f"title:{search_params['title']}")
+    if search_params.get('author'):
+        query_parts.append(f"author:{search_params['author']}")
+    if search_params.get('genre'):
+        query_parts.append(f"subject:{search_params['genre']}")
+    if search_params.get('year'):
+        query_parts.append(f"first_publish_year:{search_params['year']}")
+    if search_params.get('publisher'):
+        query_parts.append(f"publisher:{search_params['publisher']}")
+
+    # If no specific parameters, use title as general query
+    if not query_parts:
+        query = search_params.get('title', '')
+    else:
+        query = ' '.join(query_parts)
+
+    if not query:
+        return []
+
     url = f"https://openlibrary.org/search.json?q={query}&limit=20"
     try:
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
 
-        books = [] #pass this list of books into cosine similarity , it will return list of similar books, 
+        books = [] #pass this list of books into cosine similarity , it will return list of similar books,
         if 'docs' in data:
             for doc in data['docs']:
                 # Open Library often provides ISBNs in a list
@@ -304,17 +362,40 @@ def summary_page():
 def online_book_search():
     """
     Unified API endpoint to search for books from multiple online sources (Google Books, Open Library).
+    Accepts multiple search parameters for advanced filtering.
     Combines, normalizes, and deduplicates results.
     """
-    query = request.args.get('query', '').strip()
-    if not query:
-        return jsonify({"error": "Search query is required."}), 400
+    # Get search parameters
+    title = request.args.get('title', '').strip()
+    author = request.args.get('author', '').strip()
+    year = request.args.get('year', '').strip()
+    genre = request.args.get('genre', '').strip()
+    publisher = request.args.get('publisher', '').strip()
 
-    google_results = search_google_books(query)
-    open_library_results = search_open_library(query)
+    # For backward compatibility, also check for 'query' parameter
+    query = request.args.get('query', '').strip()
+    if query:
+        # If old 'query' parameter is used, treat it as title
+        title = query
+
+    # Check if at least one search parameter is provided
+    if not any([title, author, year, genre, publisher]):
+        return jsonify({"error": "At least one search parameter is required."}), 400
+
+    # Construct search query for APIs
+    search_params = {
+        'title': title,
+        'author': author,
+        'year': year,
+        'genre': genre,
+        'publisher': publisher
+    }
+
+    google_results = search_google_books(search_params)
+    open_library_results = search_open_library(search_params)
 
     combined_results = normalize_and_deduplicate_books(google_results, open_library_results)
-    
+
     # We sort the results by average_rating
     # combined_results.sort(key=lambda x: x.get('average_rating', 0), reverse=True)
 
@@ -494,11 +575,11 @@ def save_rating_api():
         if not user_id or not book_id or rating is None:
             return jsonify({"error": "Missing required fields"}), 400
 
-        success = optimized_firebase.save_user_rating(
+        success = optimized_firebase.save_user_rating_optimized(
             user_id=user_id,
             book_id=book_id,
             rating=rating,
-            cover_url=cover_url,
+            coverUrl=cover_url,
             rated_by=rated_by
         )
         return jsonify({"success": success})
@@ -530,7 +611,7 @@ def save_custom_tags_api():
 @app.route("/api/tags/user/<user_id>", methods=["GET"])
 def get_user_tags_api(user_id):
     try:
-        tags = optimized_firebase.get_all_user_tags(user_id)
+        tags = optimized_firebase.get_user_tags_optimized(user_id)
         return jsonify({"tags": tags})
     except Exception as e:
         logging.error(f"Error fetching user tags: {e}")

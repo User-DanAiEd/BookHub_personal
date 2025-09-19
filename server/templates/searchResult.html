@@ -184,21 +184,57 @@
         <div class="container" style="background: linear-gradient(135deg, rgba(45, 55, 72, 0.95), rgba(26, 32, 44, 0.9)); padding: 2rem; border-radius: 12px; backdrop-filter: blur(20px); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(20, 184, 166, 0.1); border: 1px solid rgba(255, 255, 255, 0.1); max-width: 600px; width: 100%;">
             <h1 style="font-size: 2.25rem; font-weight: bold; color: #f1f5f9; margin-bottom: 1.5rem; text-align: center;">Explore</h1>
 
-            <!-- Search Input and Button -->
-            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+        <!-- Search Form -->
+        <form id="searchForm" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <input
                     type="text"
                     id="searchInput"
-                    placeholder="Enter book title, author, or ISBN"
-                    style="flex-grow: 1; padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(15, 23, 42, 0.5); color: #f1f5f9; font-size: 1rem; transition: all 0.3s ease; box-sizing: border-box;"
+                    name="title"
+                    placeholder="Book title"
+                    style="padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(15, 23, 42, 0.5); color: #f1f5f9; font-size: 1rem; transition: all 0.3s ease; box-sizing: border-box;"
                 />
+                <input
+                    type="text"
+                    id="authorInput"
+                    name="author"
+                    placeholder="Author"
+                    style="padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(15, 23, 42, 0.5); color: #f1f5f9; font-size: 1rem; transition: all 0.3s ease; box-sizing: border-box;"
+                />
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <input
+                    type="text"
+                    id="yearInput"
+                    name="year"
+                    placeholder="Year (e.g., 2020)"
+                    style="padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(15, 23, 42, 0.5); color: #f1f5f9; font-size: 1rem; transition: all 0.3s ease; box-sizing: border-box;"
+                />
+                <input
+                    type="text"
+                    id="genreInput"
+                    name="genre"
+                    placeholder="Genre/Subject"
+                    style="padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(15, 23, 42, 0.5); color: #f1f5f9; font-size: 1rem; transition: all 0.3s ease; box-sizing: border-box;"
+                />
+            </div>
+            <div style="display: flex; gap: 1rem;">
                 <button
+                    type="submit"
                     id="searchButton"
-                    style="background: linear-gradient(135deg, #14b8a6, #06b6d4); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(20, 184, 166, 0.3); transition: all 0.3s ease; font-size: 1rem; cursor: pointer; border: none;"
+                    style="background: linear-gradient(135deg, #14b8a6, #06b6d4); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(20, 184, 166, 0.3); transition: all 0.3s ease; font-size: 1rem; cursor: pointer; border: none; flex-grow: 1;"
                 >
                     Search <span id="loadingSpinner" class="loading-spinner hidden"></span>
                 </button>
+                <button
+                    type="button"
+                    id="clearButton"
+                    style="background: linear-gradient(135deg, #64748b, #475569); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(100, 116, 139, 0.3); transition: all 0.3s ease; font-size: 1rem; cursor: pointer; border: none;"
+                >
+                    Clear Filters
+                </button>
             </div>
+        </form>
 
             <!-- Search Results Section -->
             <div id="searchResultsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
@@ -243,8 +279,13 @@
         // allBooks will now be populated by the online search API
         let allBooks = []; 
 
+        const searchForm = document.getElementById('searchForm');
         const searchInput = document.getElementById('searchInput');
+        const authorInput = document.getElementById('authorInput');
+        const yearInput = document.getElementById('yearInput');
+        const genreInput = document.getElementById('genreInput');
         const searchButton = document.getElementById('searchButton');
+        const clearButton = document.getElementById('clearButton');
         const searchResultsContainer = document.getElementById('searchResultsContainer');
         const noResultsMessage = document.getElementById('noResultsMessage');
         const messageBox = document.getElementById('messageBox');
@@ -281,21 +322,28 @@
         /**
          * Fetches the list of books from the new unified Flask backend API.
          */
-        async function fetchOnlineBooks(query) {
+        async function fetchOnlineBooks(params) {
             loadingSpinner.classList.remove('hidden'); // Show spinner
             searchButton.disabled = true; // Disable button during search
             try {
-                const response = await fetch(`/api/online-book-search?query=${encodeURIComponent(query)}`);
+                const urlParams = new URLSearchParams();
+                for (const [key, value] of Object.entries(params)) {
+                    if (value.trim()) {
+                        urlParams.append(key, value.trim());
+                    }
+                }
+                const response = await fetch(`/api/online-book-search?${urlParams.toString()}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 allBooks = await response.json();
                 console.log("Books loaded from online API:", allBooks);
-                renderSearchResults(allBooks, query);
+                const searchTerm = Object.values(params).filter(v => v.trim()).join(' ') || '';
+                renderSearchResults(allBooks, searchTerm);
             } catch (error) {
                 console.error("Could not fetch books from online API:", error);
                 showMessage("Error searching books online. Please try again later.", true);
-                renderSearchResults([], query); // Clear results on error
+                renderSearchResults([], ''); // Clear results on error
             } finally {
                 loadingSpinner.classList.add('hidden'); // Hide spinner
                 searchButton.disabled = false; // Re-enable button
@@ -385,17 +433,40 @@
 
         /**
          * Performs a search on the fetched list of books.
-         * Now triggers the online API search.
+         * Now triggers the online API search with multiple parameters.
          */
-        function performSearch() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            if (searchTerm) {
-                fetchOnlineBooks(searchTerm); // Call the new online search API
+        function performSearch(event) {
+            if (event) event.preventDefault(); // Prevent form submission if called from form
+
+            const params = {
+                title: searchInput.value.trim(),
+                author: authorInput.value.trim(),
+                year: yearInput.value.trim(),
+                genre: genreInput.value.trim()
+            };
+
+            // Check if at least one field is filled
+            const hasSearchTerm = Object.values(params).some(value => value);
+            if (hasSearchTerm) {
+                fetchOnlineBooks(params); // Call the new online search API with params
             } else {
-                renderSearchResults([], ''); // Clear results if search term is empty
-                noResultsMessage.textContent = "Please enter a search term.";
+                renderSearchResults([], ''); // Clear results if no search terms
+                noResultsMessage.textContent = "Please enter at least one search term.";
                 noResultsMessage.style.display = 'block';
             }
+        }
+
+        /**
+         * Clears all search input fields and results.
+         */
+        function clearFilters() {
+            searchInput.value = '';
+            authorInput.value = '';
+            yearInput.value = '';
+            genreInput.value = '';
+            renderSearchResults([], ''); // Clear results
+            noResultsMessage.textContent = "Search for books online to add to your collection!";
+            noResultsMessage.style.display = 'block';
         }
 
         /**
@@ -553,12 +624,8 @@
         }
 
         // Event listeners for search
-        searchButton.addEventListener('click', performSearch);
-        searchInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                performSearch();
-            }
-        });
+        searchForm.addEventListener('submit', performSearch);
+        clearButton.addEventListener('click', clearFilters);
 
         // Initialize Firebase and authentication when the window loads
         window.onload = async () => {
