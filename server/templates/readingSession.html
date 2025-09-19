@@ -39,7 +39,56 @@
             font-size: 4rem;
             font-weight: bold;
             color: #60a5fa; /* Blue color */
+            margin-bottom: 1rem;
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            width: 100%;
             margin-bottom: 2rem;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background-color: #374151; /* Dark gray background */
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #14b8a6, #06b6d4); /* Teal to cyan gradient */
+            border-radius: 6px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        /* Start Button Styles */
+        .start-button {
+            background: linear-gradient(135deg, #22c55e, #16a34a); /* Green gradient */
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+            margin-bottom: 2rem;
+        }
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+        }
+        .start-button:active {
+            transform: translateY(0);
         }
         .control-buttons {
             display: grid;
@@ -369,7 +418,18 @@
         <h2 class="text-3xl font-bold mb-1 text-center" id="sessionBookTitle"></h2>
         <p class="text-xl text-gray-400 mb-6" id="sessionBookAuthor"></p>
 
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-text" id="progressText">0% Complete</div>
+        </div>
+
         <div class="session-timer mb-6" id="sessionTimer">00:00:00</div>
+
+        <!-- Start Button -->
+        <button class="start-button" id="startSessionButton">START READING</button>
 
         <div class="control-buttons">
             <button class="control-button" id="addQuoteButton"><i class="fas fa-quote-left"></i> Add Quote</button>
@@ -489,6 +549,7 @@
         let startTime = 0;
         let isPaused = false;
         let countdownRemainingTime = 0;
+        let isTimerStarted = false; // Track if timer has been manually started
 
         // Data to save for the current session
         let currentSessionQuotes = [];
@@ -501,6 +562,9 @@
         const sessionCurrentPageDisplay = document.getElementById('sessionCurrentPageDisplay');
         const sessionTotalPagesDisplay = document.getElementById('sessionTotalPagesDisplay');
         const sessionTimer = document.getElementById('sessionTimer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const startSessionButton = document.getElementById('startSessionButton');
         const pauseSessionButton = document.getElementById('pauseSessionButton');
         const stopSessionButton = document.getElementById('stopSessionButton');
         const exitSessionButton = document.getElementById('exitSessionButton');
@@ -579,17 +643,31 @@
             }
         }
 
+        // --- Progress Bar Functions ---
+
+        function updateProgressBar() {
+            if (!currentReadingBook || !currentReadingBook.pageCount) return;
+
+            const currentPage = parseInt(sessionCurrentPageDisplay.textContent) || 0;
+            const totalPages = currentReadingBook.pageCount;
+            const progressPercent = Math.min((currentPage / totalPages) * 100, 100);
+
+            progressFill.style.width = `${progressPercent}%`;
+            progressText.textContent = `${Math.round(progressPercent)}% Complete`;
+        }
+
         // --- Timer Functions ---
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval); // Clear any existing interval
             startTime = Date.now() - (totalReadTimeSeconds * 1000); // Resume from where it left off
-            
+
             timerInterval = setInterval(() => {
                 totalReadTimeSeconds = Math.floor((Date.now() - startTime) / 1000);
                 sessionTimer.textContent = formatTime(totalReadTimeSeconds);
             }, 1000);
             isPaused = false;
+            isTimerStarted = true;
             pauseSessionButton.textContent = "PAUSE";
             pauseSessionButton.classList.remove('bg-blue-600');
             pauseSessionButton.classList.add('bg-amber-500'); // Amber for pause
@@ -692,7 +770,8 @@
                         isAuthReady = true;
                         console.log("Firebase Auth Ready. User ID:", userId);
                         await loadReadingSessionBook(); // Load book details after auth
-                        startTimer(); // Start timer automatically after loading book
+                        // Timer will be started manually by user clicking START button
+                        updateProgressBar(); // Update progress bar after loading book
                     } else {
                         userId = null;
                         isAuthReady = false;
@@ -819,8 +898,20 @@
 
         // --- Event Listeners ---
 
+        // Start Session Button
+        startSessionButton.addEventListener('click', () => {
+            if (!isTimerStarted) {
+                startTimer();
+                startSessionButton.style.display = 'none'; // Hide start button after starting
+            }
+        });
+
         pauseSessionButton.addEventListener('click', () => {
-            if (isPaused) {
+            if (!isTimerStarted) {
+                // If timer hasn't started yet, start it
+                startTimer();
+                startSessionButton.style.display = 'none';
+            } else if (isPaused) {
                 startTimer();
             } else {
                 pauseTimer();
@@ -852,6 +943,11 @@
             const text = quoteTextarea.value.trim();
             if (text) {
                 currentSessionQuotes.push({ page, text, timestamp: new Date() });
+                // Update current page display and progress bar if page number was provided
+                if (page && page > parseInt(sessionCurrentPageDisplay.textContent)) {
+                    sessionCurrentPageDisplay.textContent = page;
+                    updateProgressBar();
+                }
                 alert("Quote added!"); // Use custom message box
                 hideModal(addQuoteModal);
             } else {
@@ -869,6 +965,11 @@
             const text = thoughtTextarea.value.trim();
             if (text) {
                 currentSessionThoughts.push({ page, text, timestamp: new Date() });
+                // Update current page display and progress bar if page number was provided
+                if (page && page > parseInt(sessionCurrentPageDisplay.textContent)) {
+                    sessionCurrentPageDisplay.textContent = page;
+                    updateProgressBar();
+                }
                 alert("Thought added!"); // Use custom message box
                 hideModal(addThoughtModal);
             } else {
@@ -901,7 +1002,14 @@
             }
         });
 
-        saveSessionButton.addEventListener('click', saveReadingSessionData);
+        saveSessionButton.addEventListener('click', () => {
+            const endPage = parseInt(endPageNumberInput.value);
+            if (endPage && endPage > parseInt(sessionCurrentPageDisplay.textContent)) {
+                sessionCurrentPageDisplay.textContent = endPage;
+                updateProgressBar();
+            }
+            saveReadingSessionData();
+        });
         dontSaveSessionButton.addEventListener('click', () => {
             if (confirm("Are you sure you don't want to save this session? All progress will be lost.")) {
                 clearInterval(timerInterval); // Stop the timer
