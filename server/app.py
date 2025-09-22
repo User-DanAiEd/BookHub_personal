@@ -761,4 +761,4 @@ def serve_static(filename):
 if __name__ == '__main__':
     import logging
     logging.basicConfig(level=logging.DEBUG)
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=8000, threaded=True)

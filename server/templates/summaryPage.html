@@ -427,6 +427,32 @@
             color: #ffffff;
         }
 
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 767px) { /* md breakpoint */
             .summary-main-content {
@@ -634,6 +660,9 @@
         </div>
     </main>
 
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div></div>
+
     <!-- Message Box for notifications -->
     <div id="messageBackdrop" class="message-backdrop"></div>
     <div id="messageBox" class="message-box"></div>
@@ -766,6 +795,12 @@
                 return;
             }
 
+            if (userRating < 1 || userRating > 5) {
+                showMessage("Please select a rating between 1 and 5.", true);
+                return;
+            }
+
+            showLoading();
             try {
                 const bookRef = doc(db, `artifacts/${appId}/users/${userId}/tracked_books`, currentBookId);
                 await updateDoc(bookRef, {
@@ -793,6 +828,8 @@
             } catch (error) {
                 showMessage(`Error saving rating: ${error.message}`, true);
                 console.error("Error saving rating:", error);
+            } finally {
+                hideLoading();
             }
         });
 
@@ -846,6 +883,22 @@
                 messageBox.classList.remove('show');
                 messageBackdrop.classList.remove('show');
             }, 3000);
+        }
+
+        /**
+         * Shows the loading overlay.
+         */
+        function showLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'flex';
+        }
+
+        /**
+         * Hides the loading overlay.
+         */
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'none';
         }
         
         /**
@@ -935,6 +988,7 @@
                 return;
             }
 
+            showLoading();
             try {
                 const bookRef = doc(db, `artifacts/${appId}/users/${userId}/tracked_books`, bookId);
                 const bookSnap = await getDoc(bookRef);
@@ -1045,6 +1099,8 @@
                 showMessage(`Error loading summary details: ${error.message}. Redirecting.`, true);
                 console.error("Error loading book summary:", error);
                 window.location.href = '/'; // Redirect on error
+            } finally {
+                hideLoading();
             }
         }
 
@@ -1242,17 +1298,19 @@
         // Add/Delete Tags
         addTagButton.addEventListener('click', () => {
             const newTagText = newTagInput.value.trim();
-            if (newTagText) {
-                if (!currentBookData.customTags) {
-                    currentBookData.customTags = [];
-                }
-                if (!currentBookData.customTags.includes(newTagText)) { // Prevent duplicate tags
-                    currentBookData.customTags.push(newTagText);
-                    renderCustomTagsEdit(currentBookData.customTags); // Re-render for edit mode
-                    newTagInput.value = '';
-                } else {
-                    showMessage("Tag already exists!", false);
-                }
+            if (!newTagText) {
+                showMessage("Tag cannot be empty.", true);
+                return;
+            }
+            if (!currentBookData.customTags) {
+                currentBookData.customTags = [];
+            }
+            if (!currentBookData.customTags.includes(newTagText)) { // Prevent duplicate tags
+                currentBookData.customTags.push(newTagText);
+                renderCustomTagsEdit(currentBookData.customTags); // Re-render for edit mode
+                newTagInput.value = '';
+            } else {
+                showMessage("Tag already exists!", false);
             }
         });
         newTagInput.addEventListener('keypress', (e) => {
@@ -1435,6 +1493,8 @@
             } catch (error) {
                 showMessage(`Error saving changes: ${error.message}`, true);
                 console.error("Error saving book edits:", error);
+            } finally {
+                hideLoading();
             }
         });
 
