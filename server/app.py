@@ -640,9 +640,20 @@ def recommendations_by_tags():
 
 @app.route("/api/recommendations/hybrid", methods=["POST"])
 def recommendations_hybrid():
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    id_token = auth_header.split('Bearer ')[1]
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+        user_id = decoded_token['uid']
+    except Exception as e:
+        print(f"Token verification failed: {e}")
+        return jsonify({'error': 'Invalid token'}), 401
+
     try:
         data = request.json
-        user_id = data.get("user_id", "anonymous")
         tags = data.get("tags", [])
         alpha = float(data.get("alpha", 0.5))
         limit = data.get("limit", 10)
