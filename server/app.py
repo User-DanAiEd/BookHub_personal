@@ -674,6 +674,84 @@ def recommendation_page():
     tag = request.args.get('tag', None)
     return render_template('recommendationPage.html', tag=tag)
 
+@app.route('/statistics')
+def statistics_page():
+    book_id = request.args.get('bookId')
+    return render_template('statisticsPage.html', book_id=book_id)
+
+@app.route('/api/book-statistics/<book_id>', methods=['GET'])
+def get_book_statistics(book_id):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    id_token = auth_header.split('Bearer ')[1]
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+        user_id = decoded_token['uid']
+    except Exception as e:
+        print(f"Token verification failed: {e}")
+        return jsonify({'error': 'Invalid token'}), 401
+
+    try:
+        ratings = []
+        times = []
+        completions = []
+
+        users_ref = db.collection('users')
+        users = users_ref.stream()
+        for user_doc in users:
+            user_id = user_doc.id
+            book_ref = db.collection(f'users/{user_id}/tracked_books').document(book_id)
+            try:
+                book_snap = book_ref.get()
+                if book_snap.exists:
+                    data = book_snap.to_dict()
+                    if 'userRating' in data:
+                        ratings.append(data['userRating'])
+                    # For time, perhaps sum of session times
+                    # For completion, if 'completed' field
+                    # Assume fields
+            except:
+                pass
+
+        # Calculate stats
+        rating_counts = {}
+        for r in ratings:
+            rating_counts[r] = rating_counts.get(r, 0) + 1
+
+        # For time, average time
+        avg_time = sum(times) / len(times) if times else 0
+
+        # Completion rate
+        completed = sum(1 for c in completions if c)
+        total = len(completions)
+        completion_rate = completed / total if total else 0
+
+        user_data = []
+        for user_doc in users:
+            user_id = user_doc.id
+            book_ref = db.collection(f'users/{user_id}/tracked_books').document(book_id)
+            try:
+                book_snap = book_ref.get()
+                if book_snap.exists:
+                    data = book_snap.to_dict()
+                    user_data.append({
+                        'user_id': user_id,
+                        'rating': data.get('userRating'),
+                        'reading_time': data.get('totalReadingTime', 0),
+                        'completed': data.get('progress', 0) == 100
+                    })
+            except:
+                pass
+
+        return jsonify({
+            'user_data': user_data
+        })
+    except Exception as e:
+        print(f"Error getting book statistics: {e}")
+        return jsonify({'error': str(e)}), 500
+
 # ----------------- Static File Serving ----------------- #
 @app.route("/", defaults={"filename": "recommendationpage.html"})
 @app.route("/<path:filename>")

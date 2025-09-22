@@ -189,11 +189,11 @@
         </div>
       `;
 
-      // click to go to summary page (if your app has it)
+      // click to go to statistics page
       div.style.cursor = 'pointer';
       div.addEventListener('click', () => {
         const bookId = book.id || book.book_id || book._id;
-        if (bookId) window.location = `/summary?bookId=${encodeURIComponent(bookId)}`;
+        if (bookId) window.location = `/statistics?bookId=${encodeURIComponent(bookId)}`;
       });
 
       return div;
