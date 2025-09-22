@@ -383,6 +383,50 @@
             color: #ef4444; /* Red on hover */
         }
         
+        /* Message Box Pop-up Styles */
+        .message-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .message-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .message-box.error {
+            background-color: #dc2626;
+            color: #ffffff;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 767px) { /* md breakpoint */
             .summary-main-content {
@@ -591,6 +635,7 @@
     </main>
 
     <!-- Message Box for notifications -->
+    <div id="messageBackdrop" class="message-backdrop"></div>
     <div id="messageBox" class="message-box"></div>
 
     <script type="module">
@@ -788,8 +833,10 @@
          * @param {boolean} isError - True if it's an error message.
          */
         function showMessage(message, isError = false) {
+            const messageBackdrop = document.getElementById('messageBackdrop');
             messageBox.textContent = message;
             messageBox.className = 'message-box show';
+            messageBackdrop.classList.add('show');
             if (isError) {
                 messageBox.classList.add('error');
             } else {
@@ -797,6 +844,7 @@
             }
             setTimeout(() => {
                 messageBox.classList.remove('show');
+                messageBackdrop.classList.remove('show');
             }, 3000);
         }
         
@@ -895,6 +943,10 @@
                     currentBookData = { id: bookSnap.id, ...bookSnap.data() }; // Store data globally
                     currentBookId = bookSnap.id; // Store current book ID
                     console.log("Book data loaded for summary:", currentBookData);
+
+                    // Load user's rating
+                    userRating = currentBookData.userRating || 0;
+                    updateUserRatingDisplay();
 
                     // --- Populate Main Book Info (View Mode) ---
                     summaryBookCover.src = currentBookData.coverUrl || getBookCoverUrl(currentBookData.title);
