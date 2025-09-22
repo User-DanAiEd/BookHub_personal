@@ -11,9 +11,9 @@ import requests
 import json
 
 # Add server directory to path
-sys.path.append('server')
+sys.path.append(os.path.join(os.path.dirname(__file__), 'server'))
 
-from optimized_firebase import OptimizedFirebaseService
+from server.optimized_firebase import OptimizedFirebaseService
 
 def test_firebase_optimization():
     """Test the optimized Firebase service"""
