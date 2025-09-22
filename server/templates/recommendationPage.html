@@ -160,6 +160,7 @@
       const rated_by = book.rated_by || book.ratedBy || book.owner || 'Unknown';
       const rating = (book.rating !== undefined && book.rating !== null) ? book.rating : (book.average_rating || book.score || null);
       const avg = (book.average_rating !== undefined && book.average_rating !== null) ? book.average_rating : null;
+      const customTags = book.tags || [];
 
       div.innerHTML = `
         <div style="height:160px; margin-bottom:10px;">
@@ -173,6 +174,11 @@
             ${rating ? `<span class="small muted ml-2">${rating}</span>` : ''}
           </div>
           <div class="mt-2 small muted">Rated by: ${escapeHtml(rated_by)}</div>
+                    ${customTags.length > 0 ? `
+            <div class="mt-2 flex flex-wrap gap-2">
+                ${customTags.map(tag => `<span class="bg-blue-600 rounded-full px-2 py-1 text-xs text-white">${escapeHtml(tag)}</span>`).join('')}
+            </div>` : ''
+          }
           ${ showScores && scoreInfo ? `
             <div class="mt-3 small muted">
               <div>Content: ${(scoreInfo.content_score*100||0).toFixed(0)}%</div>
@@ -281,7 +287,8 @@
             author: r.author || r.authors,
             coverUrl: r.coverUrl || r.cover || r.coverUrl || r.image,
             rating: r.rating || r.user_rating || r.score || r.average_rating,
-            rated_by: r.rated_by || r.owner || r.ratedBy
+            rated_by: r.rated_by || r.owner || r.ratedBy,
+            tags: r.customTags || []
           };
           const scoreInfo = { content_score: r.content_score||0, collab_score: r.collab_score||0, hybrid_score: r.hybrid_score||(r.hybrid_score||0) };
           resultsWrap.appendChild(renderCard(book, scoreInfo));
