@@ -632,7 +632,7 @@ def recommendations_by_tags():
         tags = data.get("tags", [])
         limit = data.get("limit", 10)
 
-        recs = optimized_firebase.get_recommendations_by_tags(user_id, tags, limit=limit)
+        recs = optimized_firebase.get_recommendations_by_tags_optimized(tags, limit, user_id)
         return jsonify({"recommendations": recs})
     except Exception as e:
         logging.error(f"Error getting tag recommendations: {e}")

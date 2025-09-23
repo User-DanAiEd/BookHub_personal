@@ -129,6 +129,13 @@
                 <!-- Populated by JS -->
             </div>
         </section>
+        <section class="profile-section" id="recommendationsSection">
+            <h2>AI Recommendations</h2>
+            <div id="recommendationsMessage"></div>
+            <div class="books-list" id="recommendationsList">
+                <!-- Populated by JS -->
+            </div>
+        </section>
         <section class="profile-section" id="sharedRecommendationsSection">
             <h2>Shared Recommendations</h2>
             <div class="books-list" id="sharedRecommendationsList">
@@ -183,6 +190,8 @@
         const db = getFirestore(app);
         let userId = null;
         let userProfile = {};
+        let userTags = [];
+        let idToken = null;
 
         // Access control: Only allow logged-in users
         onAuthStateChanged(auth, async (user) => {
@@ -195,6 +204,7 @@
                 return;
             }
             userId = user.uid;
+            idToken = await user.getIdToken();
             userProfile = {
                 username: user.displayName || user.email.split('@')[0],
                 email: user.email,
@@ -204,6 +214,7 @@
             renderProfileInfo();
             await loadTrackedBooks();
             await loadTags();
+            await loadRecommendations();
             await loadSharedRecommendations();
             await loadStats();
             loadPreferences();
@@ -288,6 +299,7 @@
                 }
             });
             allTags = [...new Set(allTags)];
+            userTags = allTags;
             allTags.forEach(tag => {
                 tagList.innerHTML += `<span class="tag-item">${tag}</span>`;
             });
@@ -355,6 +367,54 @@
                 }
             });
             document.getElementById('mostReadGenreValue').textContent = mostReadGenre;
+        }
+
+        async function loadRecommendations() {
+            const messageDiv = document.getElementById('recommendationsMessage');
+            const listDiv = document.getElementById('recommendationsList');
+            listDiv.innerHTML = '';
+            if (userTags.length === 0) {
+                messageDiv.textContent = 'Tag some books to get AI recommendations.';
+                return;
+            }
+            const firstTag = userTags[0];
+            messageDiv.textContent = `Since you have tagged "${firstTag}", here are some similar books.`;
+            try {
+                const response = await fetch('/api/recommendations/tags', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        tags: userTags,
+                        limit: 3
+                    })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to fetch recommendations');
+                }
+                const data = await response.json();
+                const recs = data.recommendations || [];
+                if (recs.length === 0) {
+                    listDiv.innerHTML = '<div>No recommendations found.</div>';
+                    return;
+                }
+                recs.forEach(rec => {
+                    const coverUrl = rec.coverUrl || rec.cover || '/static/images/books.jpg';
+                    listDiv.innerHTML += `
+                        <div class="book-card">
+                            <img src="${coverUrl}" alt="Book Cover" style="width:100%; height:160px; object-fit:cover; border-radius:8px;" />
+                            <div><strong>${rec.title || 'Untitled'}</strong></div>
+                            <div>by ${rec.author || 'Unknown'}</div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading recommendations:', error);
+                listDiv.innerHTML = '<div>Error loading recommendations.</div>';
+            }
         }
     </script>
 </body>
