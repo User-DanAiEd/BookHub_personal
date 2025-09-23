@@ -6,7 +6,7 @@
 
 # Import required libraries
 import os  # For file system operations
-from flask import Flask, render_template, jsonify, send_from_directory, request, redirect  # Flask web framework
+from flask import Flask, render_template, jsonify, send_from_directory, request  # Flask web framework
 import traceback  # For detailed error reporting
 from collections import defaultdict
 import requests  # For making HTTP requests to external APIs
@@ -59,21 +59,6 @@ def verify_firebase_token(id_token):
     except Exception as e:
         print(f"Token verification failed: {e}")
         return None
-
-# Middleware to require authentication
-def require_auth(f):
-    def wrapper(*args, **kwargs):
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return redirect('/login')
-        id_token = auth_header.split('Bearer ')[1]
-        decoded_token = verify_firebase_token(id_token)
-        if not decoded_token:
-            return redirect('/login')
-        request.user_id = decoded_token['uid']
-        return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__
-    return wrapper
 
 # ==========================================
 # EXTERNAL API CONFIGURATION
@@ -319,12 +304,10 @@ def user_info():
     return jsonify({"user": user or "anonymous"}), 200
 
 @app.route('/profile')
-@require_auth
 def profile():
     return render_template('profile.html')
 
 @app.route('/bookTracking')
-@require_auth
 def tracking_page():
     """
     Renders the book tracking page (bookTracking.html).
@@ -687,7 +670,6 @@ def recommendations_hybrid():
 from flask import render_template, request
 
 @app.route('/recommendations')
-@require_auth
 def recommendation_page():
     tag = request.args.get('tag', None)
     return render_template('recommendationPage.html', tag=tag)
