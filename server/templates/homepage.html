@@ -32,7 +32,7 @@
             border-bottom: 1px solid rgba(20, 184, 166, 0.1);
         }
         
-        header h1 {
+        .logo h1 {
             margin: 0;
             font-weight: 700;
             font-size: 1.9rem;
@@ -41,6 +41,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            cursor: pointer;
         }
         
         .header-right {
@@ -231,7 +232,9 @@
 </head>
 <body>
     <header class="site-header">
-        <h1>BookHub</h1>
+        <div class="logo">
+            <h1>BookHub</h1>
+        </div>
         <div class="header-right">
             <nav>
                 <ul>
@@ -366,6 +369,15 @@
                 showCopyNotice();
             });
         });
+
+        // Logo click handler - redirect to home (refresh on homepage)
+        const logo = document.querySelector('.logo h1');
+        if (logo) {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        }
     </script>
 </body>
 </html>

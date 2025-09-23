@@ -40,6 +40,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            cursor: pointer;
         }
         
         .main-nav ul {
@@ -351,12 +352,43 @@
         Content is protected. Copying is not allowed.
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
+            authDomain: "bookhub-80381.firebaseapp.com",
+            projectId: "bookhub-80381",
+            storageBucket: "bookhub-80381.firebasestorage.app",
+            messagingSenderId: "525454852384",
+            appId: "1:525454852384:web:1910c936f8062125779745"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
         document.addEventListener('DOMContentLoaded', function() {
             const faqQuestions = document.querySelectorAll('.faq-question');
             const backButton = document.getElementById('backButton');
             const footer = document.getElementById('protected-footer');
             const copyNotice = document.getElementById('copyNotice');
+            const registerTab = document.getElementById('registerTab');
+
+            // Authentication check - hide Register link for logged-in users
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in, hide the Register link
+                    if (registerTab && registerTab.parentElement) {
+                        registerTab.parentElement.style.display = 'none';
+                    }
+                } else {
+                    // User is signed out, show the Register link
+                    if (registerTab && registerTab.parentElement) {
+                        registerTab.parentElement.style.display = 'inline-block';
+                    }
+                }
+            });
 
             // FAQ functionality
             faqQuestions.forEach(question => {
@@ -367,10 +399,19 @@
                 });
             });
 
-            // Back button functionality
-            backButton.addEventListener('click', () => {
-                window.history.back();
+        // Logo click handler - redirect to home
+        const logo = document.querySelector('.logo span');
+        if (logo) {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('click', () => {
+                window.location.href = '/';
             });
+        }
+
+        // Back button functionality
+        backButton.addEventListener('click', () => {
+            window.history.back();
+        });
 
             // Copy protection functionality
             // Disable right-click context menu

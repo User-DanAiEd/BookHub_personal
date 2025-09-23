@@ -322,6 +322,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Logo click handler - redirect to home
+        const logo = document.querySelector('.logo span');
+        if (logo) {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        }
+
         // Copy protection functionality
         document.addEventListener('DOMContentLoaded', function() {
             const footer = document.getElementById('protected-footer');

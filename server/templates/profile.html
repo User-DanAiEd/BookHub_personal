@@ -242,6 +242,15 @@
         let userTags = [];
         let idToken = null;
 
+        // Logo click handler - redirect to home
+        const logo = document.querySelector('.logo span');
+        if (logo) {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        }
+
         // Access control: Only allow logged-in users
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
