@@ -114,18 +114,28 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
+        .register-container h1::after {
+            content: "Create your account to get started";
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             color: #e2e8f0;
             font-weight: 500;
+            font-size: 0.95rem;
         }
-        
+
         .form-group input {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -137,11 +147,20 @@
             transition: all 0.3s ease;
             box-sizing: border-box;
         }
-        
+
         .form-group input:focus {
             outline: none;
             border-color: #14b8a6;
             box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .password-container {
+            position: relative;
         }
         
         .register-btn {
@@ -253,20 +272,24 @@
             <h1>Register</h1>
             <form id="registerForm">
                 <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" required />
+                    <label for="username">Choose a Username</label>
+                    <input type="text" id="username" placeholder="Enter your unique username" required />
                 </div>
                 <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" required />
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="your.email@example.com" required />
                 </div>
                 <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" required />
+                    <label for="password">Create Password</label>
+                    <input type="password" id="password" placeholder="Minimum 6 characters" required />
                 </div>
-                <button type="submit" class="register-btn">Register</button>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Re-enter your password" required />
+                </div>
+                <button type="submit" class="register-btn">Create Account</button>
                 <div class="login-link">
-                    Already have an account? <a href="/login">Login here</a>
+                    Already have an account? <a href="/login">Log in here</a>
                 </div>
                 <div id="error-message" class="error" style="display: none;"></div>
             </form>
@@ -303,14 +326,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             const footer = document.getElementById('protected-footer');
             const copyNotice = document.getElementById('copyNotice');
-            
+
             // Disable right-click context menu
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 showCopyNotice();
                 return false;
             });
-            
+
             // Disable common keyboard shortcuts
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && (e.key === 'a' || e.key === 'c' || e.key === 'v' || e.key === 'x' || e.key === 's')) {
@@ -324,7 +347,7 @@
                     return false;
                 }
             });
-            
+
             // Disable text selection on footer
             if (footer) {
                 footer.addEventListener('selectstart', function(e) {
@@ -332,27 +355,45 @@
                     showCopyNotice();
                     return false;
                 });
-                
+
                 footer.addEventListener('dragstart', function(e) {
                     e.preventDefault();
                     showCopyNotice();
                     return false;
                 });
             }
-            
+
             function showCopyNotice() {
                 copyNotice.style.display = 'block';
                 setTimeout(function() {
                     copyNotice.style.display = 'none';
                 }, 2000);
             }
-            
+
             // Additional protection: Clear clipboard if copy is attempted
             document.addEventListener('copy', function(e) {
                 e.clipboardData.setData('text/plain', '');
                 e.preventDefault();
                 showCopyNotice();
             });
+
+            // Password toggle functionality
+            const passwordToggle = document.getElementById('passwordToggle');
+            const passwordInput = document.getElementById('password');
+
+            if (passwordToggle && passwordInput) {
+                passwordToggle.addEventListener('click', function() {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        passwordToggle.setAttribute('aria-label', 'Hide password');
+                        passwordToggle.style.color = '#14b8a6';
+                    } else {
+                        passwordInput.type = 'password';
+                        passwordToggle.setAttribute('aria-label', 'Show password');
+                        passwordToggle.style.color = '#94a3b8';
+                    }
+                });
+            }
         });
 
         document.getElementById("registerForm").addEventListener("submit", async (e) => {
@@ -360,10 +401,25 @@
             const username = document.getElementById("username").value.trim();
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const errorMsg = document.getElementById("error-message");
+            errorMsg.style.display = "none";
 
-            if (!username || !email || !password) {
-                const errorMsg = document.getElementById("error-message");
+            if (!username || !email || !password || !confirmPassword) {
                 errorMsg.innerText = "All fields are required.";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                errorMsg.innerText = "Passwords do not match. Please try again.";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.innerText = "Password should be at least 6 characters long.";
                 errorMsg.style.display = "block";
                 return;
             }
@@ -394,7 +450,6 @@
                     errorMessage = "Please enter a valid email address.";
                 }
 
-                const errorMsg = document.getElementById("error-message");
                 errorMsg.innerText = errorMessage;
                 errorMsg.style.display = "block";
             }

@@ -19,12 +19,12 @@
             background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
             padding: 1.2rem 2rem;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             border-bottom: 1px solid rgba(20, 184, 166, 0.1);
         }
-        .profile-header h1 {
+        .logo span {
             margin: 0;
             font-weight: 700;
             font-size: 1.9rem;
@@ -33,6 +33,51 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+        .main-nav ul li a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+        .main-nav ul li a:hover {
+            color: #14b8a6;
+            background-color: rgba(20, 184, 166, 0.1);
+        }
+        .profile-title-container {
+            background: linear-gradient(135deg,
+                rgba(45, 55, 72, 0.95),
+                rgba(26, 32, 44, 0.9));
+            padding: 3rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(20, 184, 166, 0.1);
+        }
+        .profile-title-container h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .profile-title-container h1::after {
+            content: "Manage your profile and reading preferences";
+            display: block;
+            font-size: 1rem;
+            font-weight: 400;
+            color: #94a3b8;
+            margin-top: 0.5rem;
         }
         .back-btn {
             background: #ef4444;
@@ -93,30 +138,34 @@
 </head>
 <body>
     <header class="profile-header">
-        <nav>
-            <ul style="display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0;">
-                <li><a href="/" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">Home</a></li>
-                <li><a href="/bookTracking" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">Book Tracking</a></li>
-                <li><a href="/searchResult" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">Search</a></li>
-                <li><a href="/faq" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">FAQ</a></li>
-                <li><a href="/profile" style="color: #14b8a6; text-decoration: none; font-weight: 700;">Profile</a></li>
+        <div class="logo">
+            <span>BookHub</span>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" id="homeTab">Home</a></li>
+                <li><a href="/bookTracking" id="bookTrackingTab">Book Tracking</a></li>
+                <li><a href="/searchResult" id="searchResultTab">Book Search</a></li>
+                <li><a href="/faq" id="faqTab">FAQ</a></li>
+                <li><a href="/profile" id="profileTab">Profile</a></li>
             </ul>
         </nav>
-        <h1 style="margin: 0; font-weight: 700; font-size: 1.9rem; color: #ffffff; background: linear-gradient(135deg, #14b8a6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">My Profile</h1>
     </header>
-    <!-- Back button and upload button removed -->
-            <div class="profile-info-box" style="background: linear-gradient(135deg, rgba(20,184,166,0.10) 0%, rgba(45,55,72,0.95) 15%, rgba(26,32,44,0.90) 85%, rgba(139,92,246,0.10) 100%); border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 1.5rem; max-width: 900px; border: 2px solid; border-image: linear-gradient(135deg, rgba(20,184,166,0.6) 0%, rgba(139,92,246,0.4) 50%, rgba(20,184,166,0.6) 100%) 1; color: #f1f5f9; margin: 1.5rem auto;">
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <img id="profileImage" src="https://via.placeholder.com/100x100?text=Profile" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #14b8a6;" />
-                    <br>
-                    <input type="file" id="profileImageInput" accept="image/*" style="margin-top: 0.5rem;" />
-                </div>
-                <ul class="profile-info-list" id="profileInfoList" style="margin: 0;">
-                    <!-- Populated by JS -->
-                </ul>
-            </div>
-            </div>
-        </section>
+
+    <div class="profile-title-container">
+        <h1>My Profile</h1>
+    </div>
+
+    <div class="profile-info-box" style="background: linear-gradient(135deg, rgba(20,184,166,0.10) 0%, rgba(45,55,72,0.95) 15%, rgba(26,32,44,0.90) 85%, rgba(139,92,246,0.10) 100%); border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 1.5rem; max-width: 900px; border: 2px solid; border-image: linear-gradient(135deg, rgba(20,184,166,0.6) 0%, rgba(139,92,246,0.4) 50%, rgba(20,184,166,0.6) 100%) 1; color: #f1f5f9; margin: 1.5rem auto;">
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <img id="profileImage" src="https://via.placeholder.com/100x100?text=Profile" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #14b8a6;" />
+            <br>
+            <input type="file" id="profileImageInput" accept="image/*" style="margin-top: 0.5rem;" />
+        </div>
+        <ul class="profile-info-list" id="profileInfoList" style="margin: 0;">
+            <!-- Populated by JS -->
+        </ul>
+    </div>
         <section class="profile-section" id="trackedBooksSection">
             <h2>Tracked Books</h2>
             <div class="books-list" id="booksList">
