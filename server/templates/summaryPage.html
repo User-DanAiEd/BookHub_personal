@@ -454,7 +454,7 @@
         }
 
         /* Responsive adjustments */
-        @media (max-width: 767px) { /* md breakpoint */
+        @media (max-width: 767px) { 
             .summary-main-content {
                 flex-direction: column; /* Stack columns vertically on smaller screens */
                 align-items: center; /* Center items when stacked */
@@ -500,7 +500,6 @@
         <button id="backToMyBooksButton" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300 ease-in-out flex items-center gap-2">
             <i class="fas fa-arrow-left"></i> Back to My Books
         </button>
-        <!-- No User ID display needed here, as it's a specific book's page -->
     </header>
 
     <!-- Main Summary Container -->
@@ -549,7 +548,7 @@
                 <div id="customTagsDisplayView" class="flex flex-wrap justify-center gap-2 mt-4 custom-tags-section">
                     <p class="text-lg font-semibold text-white w-full text-left mb-2">Custom Tags</p>
                     <div id="customTagsListContainerView" class="flex flex-wrap gap-2">
-                        <!-- Tags will be displayed here in view mode -->
+                        <!-- Tags displayed here -->
                     </div>
                 </div>
 
@@ -591,7 +590,7 @@
                     </div>
                 </div>
 
-                <!-- Edit Mode Toggle Button -->
+                <!-- Adds Edit Mode Toggle Button -->
                 <div id="editModeButtonsContainer" class="w-full">
                     <button id="editToggleActionButton" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out font-semibold w-full">
                         Edit Book Details
@@ -602,7 +601,7 @@
                     </div>
                 </div>
 
-                <!-- Reading Sessions Collapsible -->
+                <!-- Reading Sessions that can be collapsed and expanded -->
                 <div class="collapsible-section">
                     <div class="collapsible-header" id="readingSessionsHeader">
                         <span>Reading Sessions (<span id="readingSessionsCount">0</span>)</span>
@@ -630,7 +629,7 @@
                     </div>
                 </div>
 
-                <!-- Thoughts Collapsible -->
+                <!-- Thoughts that can be collapsed and expanded -->
                 <div class="collapsible-section">
                     <div class="collapsible-header" id="thoughtsHeader">
                         <span>Thoughts (<span id="thoughtsCount">0</span>)</span>
@@ -673,7 +672,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Configuration (MUST MATCH YOUR PROJECT)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
             authDomain: "bookhub-80381.firebaseapp.com",
@@ -1051,7 +1050,7 @@
                     summaryStatusBadge.textContent = displayStatus;
                     summaryStatusBadge.className = `status-badge ${displayStatus.toLowerCase().replace(' ', '-')}`;
 
-                    // --- Populate Stats Grid ---
+                    // --- Populates the Stats Grid ---
                     summaryCurrentPage.textContent = currentPage;
                     summaryTotalPages.textContent = totalPages || '?';
                     summaryReadTime.textContent = formatTimeLong(currentBookData.totalReadTimeSeconds || 0);
@@ -1065,13 +1064,13 @@
                         summaryUrl.textContent = 'N/A';
                     }
 
-                    // --- Populate Collapsible Sections (View Mode) ---
+                    // --- Populates the Collapsible Sections (View Mode) ---
                     renderReadingSessions(currentBookData.readingSessions || []);
                     renderQuotes(currentBookData.readingSessions || []); // Populates view mode list
                     renderThoughts(currentBookData.readingSessions || []); // Populates view mode list
                     renderCustomTagsView(currentBookData.customTags || []); // Populate view mode tags
 
-                    // Populate custom tags
+                    // Populates the custom tags
                     if (currentBookData.customTags && currentBookData.customTags.length > 0) {
                         customTagsListContainerView.innerHTML = ''; // Clear existing tags
                         currentBookData.customTags.forEach(tag => {
@@ -1295,7 +1294,7 @@
             attachDeleteListenersForCollapsibles(); 
         }
 
-        // Add/Delete Tags
+        // Add and Delete Tags
         addTagButton.addEventListener('click', () => {
             const newTagText = newTagInput.value.trim();
             if (!newTagText) {
@@ -1340,7 +1339,7 @@
             }
 
             try {
-                // Ensure a deep copy to avoid modifying Firebase Timestamp objects directly
+                // Avoids modifying Firebase Timestamp objects directly
                 // and to prevent direct mutation of currentBookData until Save
                 const sessionsCopy = currentBookData.readingSessions.map(session => ({
                     ...session,
@@ -1362,10 +1361,10 @@
                 // Update the currentBookData with the modified sessions
                 currentBookData.readingSessions = sessionsCopy;
                 
-                // Re-render the display lists (which will apply edit mode visibility)
+                // Re-render the display lists 
                 renderQuotes(currentBookData.readingSessions);
                 renderThoughts(currentBookData.readingSessions);
-                // Re-attach listeners because lists are re-rendered
+                // Re-attach listeners because lists are re-rendered again
                 attachDeleteListenersForCollapsibles(); 
 
                 showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted locally. Click "Save Changes" to apply.`, false);
@@ -1386,7 +1385,7 @@
                 button.removeEventListener('click', handleThoughtDeleteClick);
             });
 
-            // Add new listeners
+            // Adds new listeners
             document.querySelectorAll('#quotesList .delete-btn').forEach(button => {
                 button.addEventListener('click', handleQuoteDeleteClick);
             });

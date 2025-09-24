@@ -78,12 +78,12 @@
     <div id="noResults" class="mt-6 text-center muted hidden">No recommendations found.</div>
   </div>
 
-  <!-- Firebase (for auth) -->
+  <!-- Firebase Portion -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    // Use same firebase config as your app (must match project)
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
       authDomain: "bookhub-80381.firebaseapp.com",
@@ -233,7 +233,7 @@
       const payload = { user_id: currentUser.uid, tags, alpha };
 
       const headers = { "Content-Type": "application/json" };
-      // Assuming Firebase Auth is already initialized
+      // Assuming Firebase Authentication is already initialized
         if (currentUser) {
           try {
             const idToken = await currentUser.getIdToken(true);
@@ -315,13 +315,12 @@
     modeBtn.addEventListener('click', () => {
       currentMode = currentMode === 'hybrid' ? 'content' : 'hybrid';
       modeBtn.childNodes[0].nodeValue = currentMode === 'hybrid' ? 'Hybrid' : 'Content';
-      // when content mode, we can call a by-tags endpoint if you prefer:
-      // (This snippet still uses hybrid endpoint but sets alpha=0 for 'content')
+      // when content mode, we can call a by-tags endpoint
     });
 
     scoreToggle.addEventListener('change', (e) => {
       showScores = e.target.checked;
-      // simply refetch using same tags if exists
+      // simply refetch the process using same tags if exists
       const tags = tagInput.value.split(',').map(s=>s.trim()).filter(Boolean);
       if (tags.length) fetchHybrid(tags, parseFloat(alphaSlider.value));
     });

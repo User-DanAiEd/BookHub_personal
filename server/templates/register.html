@@ -336,7 +336,7 @@
             const footer = document.getElementById('protected-footer');
             const copyNotice = document.getElementById('copyNotice');
 
-            // Disable right-click context menu
+            // Disable right-click copy and paste
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 showCopyNotice();
@@ -379,7 +379,7 @@
                 }, 2000);
             }
 
-            // Additional protection: Clear clipboard if copy is attempted
+            // Prevent copy action
             document.addEventListener('copy', function(e) {
                 e.clipboardData.setData('text/plain', '');
                 e.preventDefault();

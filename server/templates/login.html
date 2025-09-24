@@ -303,7 +303,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Logo click handler - redirect to home
+        // Logo click handler - redirect to home page
         const logo = document.querySelector('.logo span');
         if (logo) {
             logo.style.cursor = 'pointer';
@@ -385,7 +385,7 @@
                 const user = userCredential.user;
                 console.log("User logged in:", user.uid);
 
-                // Check if user profile exists in Firestore
+                // Check if users profile exists in Firestore or not
                 const userDocRef = doc(db, `artifacts/${firebaseConfig.projectId}/users/${user.uid}`);
                 const userDocSnap = await getDoc(userDocRef);
 
@@ -405,7 +405,7 @@
                     console.log("User profile lastLogin updated");
                 }
 
-                window.location.href = "/"; // Redirect to homepage or dashboard
+                window.location.href = "/"; // Redirect to homepage or dashboards
             } catch (error) {
                 console.error("Login error:", error);
                 let errorMessage = error.message;

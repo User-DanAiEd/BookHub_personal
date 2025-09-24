@@ -257,7 +257,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
             authDomain: "bookhub-80381.firebaseapp.com",
@@ -272,8 +272,7 @@
         let db;
         let auth;
         let userId = null;
-        let isAuthReady = false; // Flag to ensure auth is ready before Firestore ops
-        // allBooks will now be populated by the online search API
+        let isAuthReady = false; 
         let allBooks = []; 
 
         const searchForm = document.getElementById('searchForm');
@@ -310,7 +309,7 @@
             if (!title) {
                 return "https://placehold.co/100x150/e0e0e0/666666?text=No+Cover";
             }
-            // This function is primarily for local display.
+            // For local display only
             // The combined API will provide more accurate cover URLs if available.
             const encodedTitle = encodeURIComponent(title.toLowerCase().replace(/\s/g, '_').replace(/[^a-z0-9_]/g, ''));
             return `https://covers.openlibrary.org/b/title/${encodedTitle}-M.jpg`;
@@ -401,7 +400,6 @@
         }
 
         /**
-         * Parses a string representation of a list (e.g., "['item1', 'item2']") into a JavaScript array.
          * Handles potential errors during parsing.
          * @param {string} genresString - The string to parse.
          * @returns {Array<string>} An array of genre strings, or an empty array if parsing fails.
@@ -430,10 +428,9 @@
 
         /**
          * Performs a search on the fetched list of books.
-         * Now triggers the online API search with multiple parameters.
          */
         function performSearch(event) {
-            if (event) event.preventDefault(); // Prevent form submission if called from form
+            if (event) event.preventDefault(); 
 
             const params = {
                 title: searchInput.value.trim(),
@@ -445,7 +442,7 @@
             // Check if at least one field is filled
             const hasSearchTerm = Object.values(params).some(value => value);
             if (hasSearchTerm) {
-                fetchOnlineBooks(params); // Call the new online search API with params
+                fetchOnlineBooks(params); 
             } else {
                 renderSearchResults([], ''); // Clear results if no search terms
                 noResultsMessage.textContent = "Please enter at least one search term.";
@@ -468,8 +465,6 @@
 
         /**
          * Renders the search results on the page.
-         * @param {Array<Object>} books - An array of book objects to display.
-         * @param {string} searchTerm - The search term used (for no results message).
          */
         function renderSearchResults(books, searchTerm) {
             searchResultsContainer.innerHTML = ''; // Clear previous results
@@ -517,15 +512,15 @@
                     addButton.dataset.description = book.description || '';
                     addButton.dataset.genres = JSON.stringify(book.genres || []); // Store as JSON string
                     addButton.dataset.author = book.author || '';
-                    addButton.dataset.publishedDate = book.published_date || ''; // Use published_date from API
-                    addButton.dataset.pageCount = book.page_count || ''; // Use page_count from API
-                    addButton.dataset.averageRating = book.average_rating || 0; // Use average_rating from API
-                    addButton.dataset.ratingsCount = book.ratings_count || 0; // Use ratings_count from API
-                    addButton.dataset.coverUrl = book.coverUrl || ''; // Use coverUrl from API
+                    addButton.dataset.publishedDate = book.published_date || ''; // Use published_date from the API
+                    addButton.dataset.pageCount = book.page_count || ''; // Use page_count from the API
+                    addButton.dataset.averageRating = book.average_rating || 0; // Use average_rating from the API
+                    addButton.dataset.ratingsCount = book.ratings_count || 0; // Use ratings_count from the API
+                    addButton.dataset.coverUrl = book.coverUrl || ''; // Use coverUrl from the API
                     addButton.dataset.isbn13 = book.isbn_13 || '';
                     addButton.dataset.isbn10 = book.isbn_10 || '';
 
-                    // Append elements to the card
+                    // Append elements to the cards 
                     bookCard.innerHTML = `
                         <div class="book-cover-container">
                             <img src="${coverImageUrl}" alt="Cover of ${book.title || 'Untitled'}" onerror="this.onerror=null;this.src='https://placehold.co/100x150/e0e0e0/666666?text=No+Cover';" />
@@ -534,8 +529,7 @@
                             ${bookInfoHtml}
                         </div>
                     `;
-                    // Append the button *after* setting innerHTML for the book-content div
-                    // Only append the addButton if user is registered (not anonymous)
+                    // Only append the addButton if user is registered (not anonymous), otherwise
                     if (isAuthReady && userId && !auth.currentUser.isAnonymous) {
                         bookCard.querySelector('.book-content').appendChild(addButton);
                     }

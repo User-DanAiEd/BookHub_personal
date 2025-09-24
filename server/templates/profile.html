@@ -163,19 +163,16 @@
             <input type="file" id="profileImageInput" accept="image/*" style="margin-top: 0.5rem;" />
         </div>
         <ul class="profile-info-list" id="profileInfoList" style="margin: 0;">
-            <!-- Populated by JS -->
         </ul>
     </div>
         <section class="profile-section" id="trackedBooksSection">
             <h2>Tracked Books</h2>
             <div class="books-list" id="booksList">
-                <!-- Populated by JS -->
             </div>
         </section>
         <section class="profile-section" id="tagsSection">
             <h2>Books You've Tagged</h2>
             <div class="tag-list" id="tagList">
-                <!-- Populated by JS -->
             </div>
         </section>
         <section class="profile-section" id="recommendationsSection">
@@ -225,7 +222,7 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase config (reuse from summaryPage.html)
+        // Firebase config 
         const firebaseConfig = {
             apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
             authDomain: "bookhub-80381.firebaseapp.com",
@@ -242,7 +239,7 @@
         let userTags = [];
         let idToken = null;
 
-        // Logo click handler - redirect to home
+        // Logo click will redirect to home
         const logo = document.querySelector('.logo span');
         if (logo) {
             logo.style.cursor = 'pointer';
@@ -317,7 +314,7 @@
             booksSnap.forEach(docSnap => {
                 const book = docSnap.data();
                 const bookId = docSnap.id;
-                // Prefer book.coverUrl, fallback to Google Books/Open Library cover, else placeholder
+                // Prefer book.coverUrl, fallback to Google Books or Open Library cover, else placeholder
                 let coverUrl = book.coverUrl || book.googleCoverUrl || book.openLibraryCoverUrl || '/static/images/books.jpg';
                 booksList.innerHTML += `
                     <div class="book-card">
@@ -364,7 +361,7 @@
         }
 
         async function loadSharedRecommendations() {
-            // Placeholder: Fetch books rated by friends (implement backend API as needed)
+            // Placeholder: Fetch books rated by friends and family, not yet done
             const sharedRecommendationsList = document.getElementById('sharedRecommendationsList');
             sharedRecommendationsList.innerHTML = '<div>Feature coming soon: Your friends rated these books!</div>';
         }

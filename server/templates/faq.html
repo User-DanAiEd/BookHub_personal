@@ -375,7 +375,7 @@
             const copyNotice = document.getElementById('copyNotice');
             const registerTab = document.getElementById('registerTab');
 
-            // Authentication check - hide Register link for logged-in users
+            // Authentications check - hide Register link for logged-in users
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     // User is signed in, hide the Register link
@@ -399,7 +399,7 @@
                 });
             });
 
-        // Logo click handler - redirect to home
+        // Logo click handlers - redirect to home
         const logo = document.querySelector('.logo span');
         if (logo) {
             logo.style.cursor = 'pointer';

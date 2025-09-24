@@ -443,9 +443,8 @@
         </div>
     </div>
 
-    <!-- Modals -->
 
-    <!-- Add Quote Modal -->
+    <!-- "Add Quote" Modal -->
     <div id="addQuoteModal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-button" id="closeAddQuoteModalButton">&times;</button>
@@ -459,7 +458,7 @@
         </div>
     </div>
 
-    <!-- Add Thought Modal -->
+    <!-- "Add Thought" Modal -->
     <div id="addThoughtModal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-button" id="closeAddThoughtModalButton">&times;</button>
@@ -473,7 +472,7 @@
         </div>
     </div>
 
-    <!-- Countdown Modal -->
+    <!-- "Countdown" Modal -->
     <div id="countdownModal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-button" id="closeCountdownModalButton">&times;</button>
@@ -492,7 +491,7 @@
         </div>
     </div>
 
-    <!-- Stop Session Modal -->
+    <!-- "Stop Session" Modal -->
     <div id="stopSessionModal" class="modal-overlay">
         <div class="stop-session-modal-content">
             <h2 class="modal-title">FINISH READING</h2>
@@ -523,7 +522,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, updateDoc, collection, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Configuration (MUST MATCH YOUR PROJECT)
+        // Firebase Configurations
         const firebaseConfig = {
             apiKey: "AIzaSyCTbjfadYocNBVdQpo_KzuW5JEtZS38Pkw",
             authDomain: "bookhub-80381.firebaseapp.com",
@@ -539,7 +538,7 @@
         let auth;
         let userId = null;
         let isAuthReady = false;
-        const appId = firebaseConfig.projectId; // Using projectId as appId for consistency
+        const appId = firebaseConfig.projectId; // Using projectId as the appId for consistency
 
         // Session Variables
         let currentReadingBook = null;
@@ -549,14 +548,13 @@
         let startTime = 0;
         let isPaused = false;
         let countdownRemainingTime = 0;
-        let isTimerStarted = false; // Track if timer has been manually started
+        let isTimerStarted = false; // Track if the timer has been manually started
 
         // Data to save for the current session
         let currentSessionQuotes = [];
         let currentSessionThoughts = [];
         let currentRating = 0;
 
-        // DOM Elements
         const sessionBookTitle = document.getElementById('sessionBookTitle');
         const sessionBookAuthor = document.getElementById('sessionBookAuthor');
         const sessionCurrentPageDisplay = document.getElementById('sessionCurrentPageDisplay');
@@ -569,7 +567,7 @@
         const stopSessionButton = document.getElementById('stopSessionButton');
         const exitSessionButton = document.getElementById('exitSessionButton');
 
-        // Add Quote Modal Elements
+        // "Add Quote" Modal Elements
         const addQuoteButton = document.getElementById('addQuoteButton');
         const addQuoteModal = document.getElementById('addQuoteModal');
         const closeAddQuoteModalButton = document.getElementById('closeAddQuoteModalButton');
@@ -577,7 +575,7 @@
         const quoteTextarea = document.getElementById('quoteTextarea');
         const saveQuoteButton = document.getElementById('saveQuoteButton');
 
-        // Add Thought Modal Elements
+        // "Add Thought" Modal Elements
         const addThoughtButton = document.getElementById('addThoughtButton');
         const addThoughtModal = document.getElementById('addThoughtModal');
         const closeAddThoughtModalButton = document.getElementById('closeAddThoughtModalButton');
@@ -585,7 +583,7 @@
         const thoughtTextarea = document.getElementById('thoughtTextarea');
         const saveThoughtButton = document.getElementById('saveThoughtButton');
 
-        // Countdown Modal Elements
+        // "Countdown Modal" Elements
         const countdownButton = document.getElementById('countdownButton');
         const countdownModal = document.getElementById('countdownModal');
         const closeCountdownModalButton = document.getElementById('closeCountdownModalButton');
@@ -593,7 +591,7 @@
         const countdownMinutesInput = document.getElementById('countdownMinutes');
         const startCountdownButton = document.getElementById('startCountdownButton');
 
-        // Stop Session Modal Elements
+        // "Stop Session Modal" Elements
         const stopSessionModal = document.getElementById('stopSessionModal');
         const endPageNumberInput = document.getElementById('endPageNumberInput');
         const sessionRatingStars = document.getElementById('sessionRatingStars');
@@ -770,8 +768,8 @@
                         isAuthReady = true;
                         console.log("Firebase Auth Ready. User ID:", userId);
                         await loadReadingSessionBook(); // Load book details after auth
-                        // Timer will be started manually by user clicking START button
-                        updateProgressBar(); // Update progress bar after loading book
+                        // Timer will be start manually by user clicking START button
+                        updateProgressBar(); // Update the progress bar after loading book
                     } else {
                         userId = null;
                         isAuthReady = false;
@@ -782,7 +780,7 @@
                         } catch (error) {
                             console.error("Error signing in anonymously:", error);
                             alert("Error signing in to Firebase. Please check console."); // Use custom message box
-                            window.location.href = '/'; // Go back to main page on auth error
+                            window.location.href = '/'; // Go back to the main page on auth error
                         }
                     }
                 });
@@ -790,7 +788,7 @@
             } catch (error) {
                 console.error("Error initializing Firebase or signing in:", error);
                 alert(`Error setting up app: ${error.message}. Please check console.`); // Use custom message box
-                window.location.href = '/'; // Go back to main page on init error
+                window.location.href = '/'; // Go back to the main page on init error
             }
         }
 
@@ -844,7 +842,7 @@
             const endPage = parseInt(endPageNumberInput.value);
             const totalPages = currentReadingBook.pageCount;
 
-            // Determine status based on pages read
+            // Determine statuses based on pages read
             let newStatus = currentReadingBook.status || 'Not Started'; // Default to existing status
             if (endPage > 0) {
                 if (totalPages && endPage >= totalPages) {
@@ -866,12 +864,12 @@
                 rating: currentRating > 0 ? currentRating : null, // Only save if a rating was given
             };
 
-            // Calculate new overall rating for the book if a session rating was given
+            // Calculates new overall rating for the book if a session rating was given
             let newOverallRating = currentReadingBook.overallRating || 0;
             let newRatingsCount = currentReadingBook.ratingsCount || 0;
 
             if (currentRating > 0) {
-                // Simple average calculation. More robust would store all ratings.
+                // Simple average calculations. 
                 newOverallRating = (newOverallRating * newRatingsCount + currentRating) / (newRatingsCount + 1);
                 newRatingsCount++;
             }
@@ -880,9 +878,9 @@
             try {
                 await updateDoc(bookRef, {
                     currentPage: endPage,
-                    totalReadTimeSeconds: totalReadTimeSeconds, // Total cumulative time
+                    totalReadTimeSeconds: totalReadTimeSeconds, // Total cumulative times
                     status: newStatus,
-                    readingSessions: arrayUnion(sessionData), // Add new session to array
+                    readingSessions: arrayUnion(sessionData), // Add new session to arrays
                     lastReadDate: new Date(),
                     overallRating: newOverallRating,
                     ratingsCount: newRatingsCount
@@ -892,7 +890,7 @@
                 window.location.href = `/summary?bookId=${currentReadingBook.id}`;
             } catch (error) {
                 console.error("Error saving reading session:", error);
-                alert(`Error saving session: ${error.message}`); // Use custom message box
+                alert(`Error saving session: ${error.message}`); // Use custom messages box
             }
         }
 
