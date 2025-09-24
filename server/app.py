@@ -32,7 +32,7 @@ CORS(app)
 
 # Use environment variables for configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-app.config['FLASK_ENV'] = os.environ.get('FLASK_ENV', 'development')
+app.config['FLASK_ENV'] = os.environ.get('FLASK_ENV', 'production')
 
 # Path to local book database (optional - for storing books locally)
 CSV_FILE_PATH = os.path.join(os.path.dirname(__file__), 'book_details.csv')
