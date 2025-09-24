@@ -11,7 +11,7 @@
     <style>
         body {
             font-family: "Inter", sans-serif;
-            background-color: #1a2233;
+            background-color: #0f172a;
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -57,15 +57,15 @@
             gap: 1.5rem;
         }
         .book-card {
-            background-color: #1a1a1a;
-            border: 1.5px solid #ffffff;
-            border-radius: 0;
+            background-color: #0f172a;
+            border-radius: 0.75rem;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             display: flex;
             gap: 1rem;
             padding: 1.5rem;
             transition: transform 0.2s ease-in-out;
             align-items: flex-start;
+            min-height: 200px;
         }
         .book-card:hover {
             transform: translateY(-3px);
@@ -93,7 +93,8 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 0.5rem;
         }
         .book-title {
             font-size: 1.125rem;
@@ -147,7 +148,7 @@
         .action-buttons-container {
             display: flex;
             gap: 0.5rem;
-            margin-top: 1rem;
+            margin-top: auto;
         }
         .add-button {
             position: fixed;
