@@ -19,6 +19,7 @@ from firebase_admin import credentials, firestore, auth  # For Firebase credenti
 
 # Load environment variables from .env file
 load_dotenv()
+
 # ------------------------------
 # Flask Setup
 # ------------------------------
@@ -29,10 +30,14 @@ app = Flask(__name__, template_folder='templates')
 # This allows our frontend (running on different ports) to communicate with this backend
 CORS(app)
 
+# Use environment variables for configuration
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
+app.config['FLASK_ENV'] = os.environ.get('FLASK_ENV', 'development')
+
 # Path to local book database (optional - for storing books locally)
 CSV_FILE_PATH = os.path.join(os.path.dirname(__file__), 'book_details.csv')
 
-SERVICE_ACCOUNT_PATH = os.path.join(os.path.dirname(__file__), 'bookhub-80381-firebase-adminsdk-fbsvc-b3e2365f77.json')
+SERVICE_ACCOUNT_PATH = os.environ.get('FIREBASE_CREDENTIALS_PATH', os.path.join(os.path.dirname(__file__), 'bookhub-80381-firebase-adminsdk-fbsvc-b3e2365f77.json'))
 
 if os.path.exists(SERVICE_ACCOUNT_PATH):
     cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
