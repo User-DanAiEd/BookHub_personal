@@ -16,11 +16,6 @@
       "dest": "server/app.py"
     }
   ],
-  "functions": {
-    "server/app.py": {
-      "maxDuration": 30
-    }
-  },
   "env": {
     "FLASK_ENV": "production"
   }
