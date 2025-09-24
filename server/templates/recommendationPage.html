@@ -200,14 +200,37 @@
     }
 
     function renderStars(rating) {
-      if (!rating) {
-        return `<span class="muted small">Rating</span>`;
+      if (!rating || rating === 0) {
+        return `<span class="muted small">No Rating</span>`;
       }
-      const r = Math.round(Number(rating));
+
+      const numRating = Number(rating);
+      if (isNaN(numRating) || numRating < 0 || numRating > 5) {
+        return `<span class="muted small">Invalid Rating</span>`;
+      }
+
+      // Calculate full stars, half stars, and empty stars
+      const fullStars = Math.floor(numRating);
+      const hasHalfStar = numRating % 1 >= 0.5;
+      const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
       let html = '<span class="stars">';
-      for (let i=1;i<=5;i++){
-        html += (i<=r) ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+
+      // Add full stars
+      for (let i = 0; i < fullStars; i++) {
+        html += '<i class="fas fa-star"></i>';
       }
+
+      // Add half star if needed
+      if (hasHalfStar) {
+        html += '<i class="fas fa-star-half-alt"></i>';
+      }
+
+      // Add empty stars
+      for (let i = 0; i < emptyStars; i++) {
+        html += '<i class="far fa-star"></i>';
+      }
+
       html += '</span>';
       return html;
     }

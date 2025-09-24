@@ -907,18 +907,35 @@
          */
         function renderDisplayStars(rating, containerElement) {
             containerElement.innerHTML = ''; // Clear previous stars
-            const fullStars = Math.floor(rating);
-            const halfStar = rating % 1 >= 0.5;
-            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
 
+            if (!rating || rating === 0) {
+                containerElement.innerHTML = '<span class="text-gray-400 text-sm">No Rating</span>';
+                return;
+            }
+
+            const numRating = Number(rating);
+            if (isNaN(numRating) || numRating < 0 || numRating > 5) {
+                containerElement.innerHTML = '<span class="text-gray-400 text-sm">Invalid Rating</span>';
+                return;
+            }
+
+            const fullStars = Math.floor(numRating);
+            const hasHalfStar = numRating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+            // Add full stars
             for (let i = 0; i < fullStars; i++) {
-                containerElement.innerHTML += '<i class="fas fa-star"></i>';
+                containerElement.innerHTML += '<i class="fas fa-star text-yellow-500"></i>';
             }
-            if (halfStar) {
-                containerElement.innerHTML += '<i class="fas fa-star-half-alt"></i>';
+
+            // Add half star if needed
+            if (hasHalfStar) {
+                containerElement.innerHTML += '<i class="fas fa-star-half-alt text-yellow-500"></i>';
             }
+
+            // Add empty stars
             for (let i = 0; i < emptyStars; i++) {
-                containerElement.innerHTML += '<i class="far fa-star"></i>';
+                containerElement.innerHTML += '<i class="far fa-star text-yellow-500"></i>';
             }
         }
 
