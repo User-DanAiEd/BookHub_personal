@@ -9,6 +9,7 @@ import pandas as pd
 import time
 from functools import lru_cache
 import threading
+import spacy
 
 class OptimizedFirebaseService:
     def __init__(self, project_id: str, credentials_path: str = None):
@@ -27,6 +28,13 @@ class OptimizedFirebaseService:
         # Read monitoring
         self._read_count = 0
         self._read_limit_warning = 1000  # Warn at 1000 reads per session
+
+        # Load spaCy model for semantic similarity
+        try:
+            self.nlp = spacy.load("en_core_web_sm")
+        except OSError:
+            print("spaCy model 'en_core_web_sm' not found. Please install it with: pip install spacy && python -m spacy download en_core_web_sm")
+            self.nlp = None
         
     def _initialize_firebase(self):
         """Initialize Firebase Admin SDK"""
@@ -110,10 +118,10 @@ class OptimizedFirebaseService:
             return []
 
     def get_recommendations_by_tags_optimized(self, tags: List[str], limit: int = 10, user_id: str = None) -> List[Dict[str, Any]]:
-        """Optimized tag-based recommendations with caching"""
+        """Optimized tag-based recommendations with caching and semantic expansion"""
         if not tags:
             return []
-            
+
         cache_key = self._get_cache_key("tag_recs", sorted(tags), limit, user_id)
         cached_result = self._get_from_cache(cache_key)
         if cached_result is not None:
@@ -122,10 +130,23 @@ class OptimizedFirebaseService:
         try:
             # Limit tags to prevent query complexity
             filter_tags = list(set(tags))[:10]
-            
+
+            # Expand tags semantically if spaCy is available
+            if self.nlp is not None:
+                expanded_tags = set(filter_tags)
+                for tag in filter_tags:
+                    # Find semantically similar tags from user's tags
+                    user_tags = self.get_user_tags_optimized(user_id) if user_id else []
+                    for user_tag in user_tags:
+                        similarity = self.compute_semantic_similarity([tag], [user_tag])
+                        if similarity > 0.5:  # Threshold for semantic similarity
+                            expanded_tags.add(user_tag)
+                filter_tags = list(expanded_tags)[:10]  # Limit to 10 tags
+                print(f"[DEBUG] Expanded tags from {tags} to {filter_tags}")
+
             recommendations = []
             seen_books = set()
-            
+
             # Use collection group query with limit
             query = (self.db.collection_group('tracked_books')
                     .where('customTags', 'array_contains_any', filter_tags)
@@ -258,40 +279,54 @@ class OptimizedFirebaseService:
             return {}
 
     def hybrid_recommendation_optimized(self, user_id: str, tags: List[str], alpha: float = 0.5, limit: int = 10) -> List[Dict[str, Any]]:
-        """Optimized hybrid recommendations with minimal Firebase reads"""
+        """Optimized hybrid recommendations with minimal Firebase reads and semantic similarity"""
         try:
+            print(f"[DEBUG] Starting hybrid recommendation for user {user_id} with tags: {tags}")
             recommendations = {}
-            
+
+            # Get user tags for semantic similarity
+            user_tags = self.get_user_tags_optimized(user_id)
+            print(f"[DEBUG] User tags retrieved: {user_tags}")
+
             # 1. Content-based recommendations (cached)
             if tags:
+                print(f"[DEBUG] Getting content-based recommendations for tags: {tags}")
                 content_recs = self.get_recommendations_by_tags_optimized(tags, limit * 2, user_id)
+                print(f"[DEBUG] Found {len(content_recs)} content-based recommendations")
                 for rec in content_recs:
                     book_id = rec['id']
+                    book_tags = rec.get('customTags', [])
+                    # Normalize tags to lowercase for case-insensitive matching
+                    normalized_tags = [tag.lower() for tag in tags]
+                    normalized_book_tags = [tag.lower() for tag in book_tags]
+                    content_score = len(set(normalized_tags) & set(normalized_book_tags)) / len(tags) if tags else 0
+                    print(f"[DEBUG] Book {book_id} has tags {book_tags}, normalized: {normalized_book_tags}, search tags: {tags}, normalized: {normalized_tags}, content_score: {content_score}")
                     recommendations[book_id] = {
                         **rec,
-                        'content_score': len(set(tags) & set(rec.get('customTags', []))) / len(tags) if tags else 0,
+                        'content_score': content_score,
                         'collab_score': 0,
+                        'semantic_score': 0,
                         'source': 'content'
                     }
-            
+
             # 2. Collaborative filtering (cached, limited)
             if alpha > 0:
                 user_ratings = self.get_user_ratings_optimized(user_id)
                 if user_ratings:
                     # Get limited collaborative data
                     collab_data = self.get_collaborative_data_optimized(limit_users=30)
-                    
+
                     # Simple collaborative scoring
                     for other_user_id, other_ratings in collab_data.items():
                         if other_user_id == user_id:
                             continue
-                            
+
                         # Find common books
                         common_books = set(user_ratings.keys()) & set(other_ratings.keys())
                         if len(common_books) >= 2:  # Need some overlap
                             # Calculate similarity (simplified)
                             similarity = len(common_books) / (len(user_ratings) + len(other_ratings) - len(common_books))
-                            
+
                             # Recommend books this similar user liked
                             for book_id, rating in other_ratings.items():
                                 if book_id not in user_ratings and rating >= 4:  # Only high-rated books
@@ -303,21 +338,31 @@ class OptimizedFirebaseService:
                                             'coverUrl': '',
                                             'content_score': 0,
                                             'collab_score': 0,
+                                            'semantic_score': 0,
                                             'source': 'collaborative'
                                         }
                                     recommendations[book_id]['collab_score'] += similarity * (rating / 5.0)
-            
-            # 3. Calculate hybrid scores
+
+            # 3. Calculate semantic similarity and hybrid scores
             final_recs = []
             for book_id, rec in recommendations.items():
-                hybrid_score = (1 - alpha) * rec['content_score'] + alpha * rec['collab_score']
+                # Compute semantic similarity
+                book_tags = rec.get('customTags', [])
+                semantic_score = self.compute_semantic_similarity(user_tags, book_tags)
+                rec['semantic_score'] = semantic_score
+                print(f"[DEBUG] Book {book_id} has semantic_score: {semantic_score} with user_tags: {user_tags}")
+
+                # Calculate hybrid score with semantic similarity
+                hybrid_score = (0.4 * rec['collab_score']) + (0.3 * rec['content_score']) + (0.3 * semantic_score)
                 rec['hybrid_score'] = round(hybrid_score, 3)
+                print(f"[DEBUG] Book {book_id} hybrid_score: {hybrid_score} (collab: {rec['collab_score']}, content: {rec['content_score']}, semantic: {semantic_score})")
                 final_recs.append(rec)
-            
+
             # Sort by hybrid score
             final_recs.sort(key=lambda x: x['hybrid_score'], reverse=True)
+            print(f"[DEBUG] Final recommendations count: {len(final_recs)}")
             return final_recs[:limit]
-            
+
         except Exception as e:
             print(f"Error in optimized hybrid recommendations: {e}")
             return []
@@ -596,3 +641,14 @@ class OptimizedFirebaseService:
                 'expired_entries': len(self._cache) - active_entries,
                 'read_count': self._read_count
             }
+
+    def compute_semantic_similarity(self, tags1: List[str], tags2: List[str]) -> float:
+        """Compare two sets of tags semantically using spaCy embeddings."""
+        if not tags1 or not tags2 or self.nlp is None:
+            return 0.0
+
+        # Convert tags into one combined doc each
+        doc1 = self.nlp(" ".join(tags1))
+        doc2 = self.nlp(" ".join(tags2))
+
+        return doc1.similarity(doc2)  # spaCy gives 0.0 - 1.0 similarity
