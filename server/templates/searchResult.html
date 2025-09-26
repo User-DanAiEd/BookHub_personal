@@ -235,7 +235,7 @@
 
             <!-- Search Results Section -->
             <div id="searchResultsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
-                <!-- Search results will be dynamically loaded and displayed here by JavaScript -->
+                <!-- The search results will be dynamically loaded and displayed here by JavaScript -->
                 <p id="noResultsMessage" style="color: #94a3b8; text-align: center; margin-top: 2rem;">Search for books online to add to your collection!</p>
                 <p id="unregisteredMessage" style="color: #94a3b8; text-align: center; margin-top: 2rem; display:none;">Please log in or register to add books to your collection.</p>
             </div>
@@ -267,7 +267,7 @@
             appId: "1:525454852384:web:1910c936f8062125779745"
         };
 
-        // Initialize Firebase
+        // Initialize the Firebase
         let app;
         let db;
         let auth;
@@ -484,7 +484,7 @@
                     // The API now returns genres as an array directly
                     const displayGenres = Array.isArray(book.genres) ? book.genres : [];
 
-                    // Create the book info text content
+                    // Created the book info text content
                     const bookInfoHtml = `
                         <div class="book-info-text">
                             <h3 class="book-title">
@@ -500,13 +500,13 @@
                         </div>
                     `;
 
-                    // Create the button element separately
+                    // Created the button element separately
                     const addButton = document.createElement('button');
                     addButton.type = "button";
                     addButton.className = "add-book-button";
                     addButton.textContent = "ADD BOOK"; // Set text content directly
 
-                    // Set data attributes on the button element
+                    // Set the data attributes on the button element
                     addButton.dataset.title = book.title || '';
                     addButton.dataset.url = book.url || '';
                     addButton.dataset.description = book.description || '';
@@ -614,11 +614,11 @@
             });
         }
 
-        // Event listeners for search
+        // Event listeners for searching
         searchForm.addEventListener('submit', performSearch);
         clearButton.addEventListener('click', clearFilters);
 
-        // Initialize Firebase and authentication when the window loads
+        // Initialize the Firebase and authentication when the window loads
         window.onload = async () => {
             await initializeFirebaseAndAuth();
             // No initial fetch for local CSV books. User must search online.

@@ -74,9 +74,9 @@ GOOGLE_BOOKS_API_KEY = os.getenv('GOOGLE_BOOKS_API_KEY')
 
 # Print API key status for debugging (without exposing the actual key)
 if GOOGLE_BOOKS_API_KEY:
-    print(f"✅ Google Books API key loaded successfully (length: {len(GOOGLE_BOOKS_API_KEY)})")
+    print(f"Google Books API key loaded successfully (length: {len(GOOGLE_BOOKS_API_KEY)})")
 else:
-    print("⚠️  Warning: Google Books API key not found in environment variables")
+    print("Warning: Google Books API key not found in environment variables")
 
 # --- External Book Search Functions ---
 
@@ -234,7 +234,7 @@ def search_open_library(search_params):
                     'isbn_10': isbn_10,
                     'source': 'Open Library'
                 }
-                # Filter out books with no title or author
+                # Filters out books with no title or author
                 if book['title'] and book['author']:
                     books.append(book)
         return books
@@ -251,7 +251,7 @@ def normalize_and_deduplicate_books(google_books_results, open_library_results):
     Combines, normalizes, and deduplicates search results from multiple sources.
     Prioritizes Google Books data if ISBN matches.
     """
-    unified_books = {} # Use a dictionary for deduplication by ISBN or title+author
+    unified_books = {} # Uses a dictionary for deduplication by ISBN or title+author
 
     def make_key(book):
         title = (book.get('title') or "").lower().strip()
@@ -289,7 +289,7 @@ def normalize_and_deduplicate_books(google_books_results, open_library_results):
 
     return list(unified_books.values())
 
-# --- Flask Routes ---
+# --- Flask Routes for Routing Purposes ---
 
 @app.route('/')
 def homepage():
@@ -405,7 +405,7 @@ def online_book_search():
 
     combined_results = normalize_and_deduplicate_books(google_results, open_library_results)
 
-    # We sort the results by average_rating
+    # It sorts the results by average_rating
     # combined_results.sort(key=lambda x: x.get('average_rating', 0), reverse=True)
 
     return jsonify(combined_results)
@@ -714,9 +714,6 @@ def get_book_statistics(book_id):
                     data = book_snap.to_dict()
                     if 'userRating' in data:
                         ratings.append(data['userRating'])
-                    # For time, perhaps sum of session times
-                    # For completion, if 'completed' field
-                    # Assume fields
             except:
                 pass
 

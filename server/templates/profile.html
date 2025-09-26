@@ -179,13 +179,13 @@
             <h2>AI Recommendations</h2>
             <div id="recommendationsMessage"></div>
             <div class="books-list" id="recommendationsList">
-                <!-- Populated by JS -->
+                <!-- This part is populated by JS -->
             </div>
         </section>
         <section class="profile-section" id="sharedRecommendationsSection">
             <h2>Shared Recommendations</h2>
             <div class="books-list" id="sharedRecommendationsList">
-                <!-- Populated by JS -->
+                <!-- This part is populated by JS -->
             </div>
         </section>
         <section class="profile-section" id="preferencesSection">
@@ -284,11 +284,11 @@
             `;
         }
 
-        // Profile image upload functionality
+        // Simple profile image upload functionality
         const profileImageInput = document.getElementById('profileImageInput');
         const profileImage = document.getElementById('profileImage');
 
-        // Load from localStorage
+        // Load from localStorage which is temporary
         const savedImage = localStorage.getItem('profileImage');
         if (savedImage) {
             profileImage.src = savedImage;
@@ -413,7 +413,7 @@
                     genreCounts[tag] = (genreCounts[tag] || 0) + 1;
                 });
             });
-            let mostReadGenre = 'N/A';
+            let mostReadGenre = 'N/A'; //default
             let maxCount = 0;
             Object.entries(genreCounts).forEach(([genre, count]) => {
                 if (count > maxCount) {

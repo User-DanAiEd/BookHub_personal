@@ -548,7 +548,7 @@
         let startTime = 0;
         let isPaused = false;
         let countdownRemainingTime = 0;
-        let isTimerStarted = false; // Track if the timer has been manually started
+        let isTimerStarted = false; // Tracks if the timer has been manually started
 
         // Data to save for the current session
         let currentSessionQuotes = [];
@@ -598,11 +598,11 @@
         const saveSessionButton = document.getElementById('saveSessionButton');
         const dontSaveSessionButton = document.getElementById('dontSaveSessionButton');
 
-        // --- Utility Functions ---
+        // --- Other Utility Functions ---
 
         /**
          * Formats seconds into HH:MM:SS string.
-         * @param {number} totalSeconds - Total seconds to format.
+         * @param {number} totalSeconds - Converts the total seconds to format.
          * @returns {string} Formatted time string.
          */
         function formatTime(totalSeconds) {
@@ -615,7 +615,7 @@
         }
 
         /**
-         * Shows a modal overlay.
+         * Shows the modal overlay.
          * @param {HTMLElement} modalElement - The modal to show.
          */
         function showModal(modalElement) {
@@ -623,12 +623,12 @@
         }
 
         /**
-         * Hides a modal overlay.
+         * Hides the modal overlay.
          * @param {HTMLElement} modalElement - The modal to hide.
          */
         function hideModal(modalElement) {
             modalElement.classList.remove('show');
-            // Clear inputs when hiding
+            // Clears inputs when hiding
             if (modalElement === addQuoteModal) {
                 quotePageNumberInput.value = '';
                 quoteTextarea.value = '';
@@ -657,8 +657,8 @@
         // --- Timer Functions ---
 
         function startTimer() {
-            if (timerInterval) clearInterval(timerInterval); // Clear any existing interval
-            startTime = Date.now() - (totalReadTimeSeconds * 1000); // Resume from where it left off
+            if (timerInterval) clearInterval(timerInterval); // Clears any existing interval
+            startTime = Date.now() - (totalReadTimeSeconds * 1000); // Resume from where user left off
 
             timerInterval = setInterval(() => {
                 totalReadTimeSeconds = Math.floor((Date.now() - startTime) / 1000);
@@ -701,7 +701,7 @@
 
             // Temporarily use sessionTimer for countdown display
             sessionTimer.textContent = formatTime(remainingSeconds);
-            pauseTimer(); // Pause the stopwatch while countdown runs
+            pauseTimer(); // Pause the stopwatch while the countdown feature runs
 
             countdownInterval = setInterval(() => {
                 remainingSeconds--;
@@ -864,7 +864,7 @@
                 rating: currentRating > 0 ? currentRating : null, // Only save if a rating was given
             };
 
-            // Calculates new overall rating for the book if a session rating was given
+            // Calculates the new overall rating for the book if a session rating was given
             let newOverallRating = currentReadingBook.overallRating || 0;
             let newRatingsCount = currentReadingBook.ratingsCount || 0;
 

@@ -11,6 +11,7 @@ from functools import lru_cache
 import threading
 import spacy
 
+#Optimized features from firebase_recommendations.py
 class OptimizedFirebaseService:
     def __init__(self, project_id: str, credentials_path: str = None):
         """Initialize optimized Firebase service with caching and read monitoring"""

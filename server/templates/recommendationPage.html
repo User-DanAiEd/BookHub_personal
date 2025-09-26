@@ -132,7 +132,7 @@
     const noResults = document.getElementById('noResults');
     const message = document.getElementById('message');
 
-    let currentMode = 'hybrid'; // or 'content'
+    let currentMode = 'hybrid'; 
     let showScores = true;
 
     function showMessage(text, timeout=2500) {
@@ -216,7 +216,7 @@
 
       return div;
     }
-
+    //Render the stars and its rating
     function renderStars(rating) {
       if (!rating || rating === 0) {
         return `<span class="muted small">Rating</span>`;
@@ -274,7 +274,6 @@
       const payload = { user_id: currentUser.uid, tags, alpha };
 
       const headers = { "Content-Type": "application/json" };
-      // Assuming Firebase Authentication is already initialized
         if (currentUser) {
           try {
             const idToken = await currentUser.getIdToken(true);
@@ -321,7 +320,7 @@
         // Render
         resultsWrap.innerHTML = '';
         recs.forEach(r => {
-          // normalize fields
+          // normalize the fields
           const book = {
             id: r.id || r.book_id || r.bookId,
             title: r.title || r.name,

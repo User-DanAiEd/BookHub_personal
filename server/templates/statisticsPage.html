@@ -97,7 +97,7 @@
         document.body.innerHTML = `<div style='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0b1220;color:#e6eef8;font-family:Inter,sans-serif;'><h2 style='margin-bottom:1.5rem;'>You must be logged in to view statistics.</h2><div style='display:flex;gap:2rem;'><a href='/login' style='background:#14b8a6;color:#fff;padding:0.75rem 2rem;border-radius:8px;text-decoration:none;font-weight:600;'>Go to Login</a><a href='/register' style='background:#06b6d4;color:#fff;padding:0.75rem 2rem;border-radius:8px;text-decoration:none;font-weight:600;'>Register</a></div></div>`;
       }
     });
-
+    //All feature listed below are placeholders
     async function loadStatistics() {
       const urlParams = new URLSearchParams(window.location.search);
       const bookId = urlParams.get('bookId');
@@ -143,7 +143,7 @@
         alert('Error loading statistics');
       }
     }
-
+    
     function renderCharts() {
       // Rating Distribution Bar Chart
       const ratingCtx = document.getElementById('ratingChart').getContext('2d');

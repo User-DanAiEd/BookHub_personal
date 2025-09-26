@@ -90,7 +90,7 @@ class FirebaseRecommender:
         """Get hybrid recommendations using expanded tags + collaborative ratings."""
         expanded_tags = self.expand_tags_with_cosine(tags)
 
-        # Step 1: Fetch all books with matching tags
+        # Step 1: Fetch all the books with any matching tags
         books = []
         books_ref = self.db.collection_group("tracked_books").stream()
         for book in books_ref:
@@ -103,7 +103,7 @@ class FirebaseRecommender:
         if not books:
             return []
 
-        # Step 2: Aggregate ratings across all users
+        # Step 2: Aggregate all the ratings across all users
         rating_map = defaultdict(list)
         for book in books:
             if "rating" in book:
@@ -128,7 +128,7 @@ class FirebaseRecommender:
                 "customTags": book.get("customTags", []),
             })
 
-        # Step 3: Sort by avg rating, fallback to addedAt if needed
+        # Step 3: Sort them by average rating, fallback to addedAt if needed
         recommendations = sorted(
             recommendations,
             key=lambda x: (x["avgRating"] if x["avgRating"] else 0),
